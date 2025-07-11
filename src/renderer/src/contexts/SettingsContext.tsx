@@ -1,42 +1,36 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 
-export type Theme = 'light' | 'dark' | 'system'
-
-interface Settings {
-  theme: Theme
+export interface Settings {
   opacity: number
   defaultPrompt: string
   aiModel: string
+  position: { x: number; y: number }
 }
 
 interface SettingsContextType {
   settings: Settings
-  updateSettings: (newSettings: Partial<Settings>) => void
+  updateSettings: (updates: Partial<Settings>) => void
   resetSettings: () => void
 }
 
 const defaultSettings: Settings = {
-  theme: 'dark',
   opacity: 80,
-  defaultPrompt: 'Analyze what you see in this screenshot and provide helpful insights.',
-  aiModel: 'gemini-pro'
+  defaultPrompt: 'Analyze this screen and provide insights.',
+  aiModel: 'gemini-2.0-flash',
+  position: { x: 100, y: 100 }
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
-export const useSettings = () => {
-  const context = useContext(SettingsContext)
-  if (!context) {
-    throw new Error('useSettings must be used within a SettingsProvider')
-  }
-  return context
+interface SettingsProviderProps {
+  children: ReactNode
 }
 
-export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) => {
   const [settings, setSettings] = useState<Settings>(defaultSettings)
 
+  // Load settings from localStorage on mount
   useEffect(() => {
-    // Load settings from localStorage
     const savedSettings = localStorage.getItem('clue-settings')
     if (savedSettings) {
       try {
@@ -48,17 +42,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [])
 
+  // Save settings to localStorage whenever they change
   useEffect(() => {
-    // Save settings to localStorage
     localStorage.setItem('clue-settings', JSON.stringify(settings))
+
+    // Apply opacity to the app
+    const root = document.documentElement
+    root.style.setProperty('--app-opacity', (settings.opacity / 100).toString())
   }, [settings])
 
-  const updateSettings = (newSettings: Partial<Settings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }))
+  const updateSettings = (updates: Partial<Settings>) => {
+    setSettings((prev) => ({ ...prev, ...updates }))
   }
 
   const resetSettings = () => {
     setSettings(defaultSettings)
+    localStorage.removeItem('clue-settings')
   }
 
   return (
@@ -66,4 +65,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       {children}
     </SettingsContext.Provider>
   )
+}
+
+export const useSettings = (): SettingsContextType => {
+  const context = useContext(SettingsContext)
+  if (!context) {
+    throw new Error('useSettings must be used within a SettingsProvider')
+  }
+  return context
 }

@@ -11,7 +11,7 @@ interface PanelGroupProps {
   onToggleRecording: () => void
   transcription: string
   isVisible: boolean
-  onSettingsClick: () => void
+  onOpenSettings: () => void
 }
 
 export const PanelGroup: React.FC<PanelGroupProps> = ({
@@ -23,7 +23,7 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
   onToggleRecording,
   transcription,
   isVisible,
-  onSettingsClick
+  onOpenSettings
 }) => {
   const [position, setPosition] = useState({ x: 100, y: 100 })
   const [screenSize, setScreenSize] = useState({ width: 1920, height: 1080 })
@@ -96,7 +96,7 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
           isRecording={isRecording}
           onToggleRecording={onToggleRecording}
           transcription={transcription}
-          onSettingsClick={onSettingsClick}
+          onOpenSettings={onOpenSettings}
           className="animate-in fade-in-0 slide-in-from-top-4 duration-300"
         />
 
@@ -104,7 +104,6 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
           response={response}
           isLoading={isLoading}
           onClear={onClearResponse}
-          onFollowUp={onAskQuestion}
           className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300"
         />
       </div>

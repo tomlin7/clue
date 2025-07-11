@@ -61,11 +61,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
   return (
     <div
       className={cn(
-        'backdrop-blur-md border rounded-lg shadow-xl transition-all duration-300',
+        'acrylic-panel acrylic-panel-glow acrylic-panel-shimmer acrylic-panel-enhanced-shadow',
+        'rounded-lg transition-all duration-300',
         'min-w-[400px] max-w-[500px]',
-        effectiveTheme === 'dark'
-          ? 'bg-black/20 border-white/10 hover:bg-black/30 hover:border-white/20'
-          : 'bg-white/20 border-black/10 hover:bg-white/30 hover:border-black/20',
         className
       )}
       onMouseEnter={() => window.electronAPI.setClickThrough(false)}
@@ -82,7 +80,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <Badge
             variant="secondary"
             className={cn(
-              effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-black/10 text-black'
+              effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-700'
             )}
           >
             Settings
@@ -97,7 +95,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
             'h-8 w-8',
             effectiveTheme === 'dark'
               ? 'text-white/70 hover:text-white hover:bg-white/10'
-              : 'text-black/70 hover:text-black hover:bg-black/10'
+              : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
           )}
         >
           <X size={14} />
@@ -111,7 +109,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-black'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
             )}
           >
             Theme
@@ -125,13 +123,21 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 'flex items-center gap-2',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 text-white hover:bg-white/20'
-                  : 'bg-black/10 text-black hover:bg-black/20'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               )}
             >
               {getThemeIcon()}
               {getThemeLabel()}
             </Button>
-            <Badge variant="outline" className="text-xs">
+            <Badge
+              variant="secondary"
+              className={cn(
+                'text-xs border-0',
+                effectiveTheme === 'dark'
+                  ? 'bg-white/10 text-white/70'
+                  : 'bg-gray-100 text-gray-600'
+              )}
+            >
               Ctrl+T
             </Badge>
           </div>
@@ -142,7 +148,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-black'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
             )}
           >
             Panel Opacity ({settings.opacity}%)
@@ -158,7 +164,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 'flex-1',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-black/10 border-black/20 text-black'
+                  : 'bg-gray-50 border-gray-300 text-gray-800'
               )}
             />
             <Input
@@ -171,7 +177,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 'w-16',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-black/10 border-black/20 text-black'
+                  : 'bg-gray-50 border-gray-300 text-gray-800'
               )}
             />
           </div>
@@ -182,7 +188,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-black'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
             )}
           >
             Default AI Prompt
@@ -197,7 +203,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 'w-full p-2 rounded border resize-none text-sm',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50'
-                  : 'bg-black/10 border-black/20 text-black placeholder:text-black/50'
+                  : 'bg-gray-50 border-gray-300 text-gray-800 placeholder:text-gray-500'
               )}
             />
             <Button
@@ -216,7 +222,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-black'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
             )}
           >
             AI Model
@@ -228,11 +234,12 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               'w-full p-2 rounded border text-sm',
               effectiveTheme === 'dark'
                 ? 'bg-white/10 border-white/20 text-white'
-                : 'bg-black/10 border-black/20 text-black'
+                : 'bg-gray-50 border-gray-300 text-gray-800'
             )}
           >
-            <option value="gemini-pro">Gemini Pro</option>
-            <option value="gemini-pro-vision">Gemini Pro Vision</option>
+            <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
           </select>
         </div>
 
@@ -241,49 +248,89 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-black'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
             )}
           >
             Keyboard Shortcuts
           </h3>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between">
-              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-black/70')}>
+              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-gray-600')}>
                 Show/Hide App
               </span>
-              <Badge variant="outline" className="text-xs">
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'text-xs border-0',
+                  effectiveTheme === 'dark'
+                    ? 'bg-white/10 text-white/70'
+                    : 'bg-gray-100 text-gray-600'
+                )}
+              >
                 Ctrl+\
               </Badge>
             </div>
             <div className="flex justify-between">
-              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-black/70')}>
+              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-gray-600')}>
                 Capture Screen
               </span>
-              <Badge variant="outline" className="text-xs">
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'text-xs border-0',
+                  effectiveTheme === 'dark'
+                    ? 'bg-white/10 text-white/70'
+                    : 'bg-gray-100 text-gray-600'
+                )}
+              >
                 Ctrl+Enter
               </Badge>
             </div>
             <div className="flex justify-between">
-              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-black/70')}>
+              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-gray-600')}>
                 Toggle Microphone
               </span>
-              <Badge variant="outline" className="text-xs">
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'text-xs border-0',
+                  effectiveTheme === 'dark'
+                    ? 'bg-white/10 text-white/70'
+                    : 'bg-gray-100 text-gray-600'
+                )}
+              >
                 Ctrl+M
               </Badge>
             </div>
             <div className="flex justify-between">
-              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-black/70')}>
+              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-gray-600')}>
                 Toggle Theme
               </span>
-              <Badge variant="outline" className="text-xs">
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'text-xs border-0',
+                  effectiveTheme === 'dark'
+                    ? 'bg-white/10 text-white/70'
+                    : 'bg-gray-100 text-gray-600'
+                )}
+              >
                 Ctrl+T
               </Badge>
             </div>
             <div className="flex justify-between">
-              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-black/70')}>
+              <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-gray-600')}>
                 Close App
               </span>
-              <Badge variant="outline" className="text-xs">
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'text-xs border-0',
+                  effectiveTheme === 'dark'
+                    ? 'bg-white/10 text-white/70'
+                    : 'bg-gray-100 text-gray-600'
+                )}
+              >
                 Ctrl+Q
               </Badge>
             </div>

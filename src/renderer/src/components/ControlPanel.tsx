@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
-import { Mic, MicOff, Settings, X } from 'lucide-react'
+import { Mic, MicOff, Settings } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
 interface ControlPanelProps {
@@ -10,7 +10,7 @@ interface ControlPanelProps {
   isRecording: boolean
   onToggleRecording: () => void
   transcription: string
-  onSettingsClick: () => void
+  onOpenSettings: () => void
   className?: string
 }
 
@@ -19,12 +19,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   isRecording,
   onToggleRecording,
   transcription,
-  onSettingsClick,
+  onOpenSettings,
   className
 }) => {
-  const { effectiveTheme } = useTheme()
-  const [question, setQuestion] = useState('')
   const [recordingTime, setRecordingTime] = useState(0)
+  const { effectiveTheme } = useTheme()
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -44,55 +43,46 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (question.trim()) {
-      onAskQuestion(question)
-      setQuestion('')
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit(e)
-    }
-  }
-
-  const handleClose = () => {
-    window.electronAPI.closeApp()
-  }
-
   return (
     <div
       className={cn(
-        'backdrop-blur-md border rounded-lg p-4 shadow-2xl',
-        'transition-all duration-300',
-        effectiveTheme === 'dark'
-          ? 'bg-black/20 border-white/10 hover:bg-black/30 hover:border-white/20'
-          : 'bg-white/20 border-black/10 hover:bg-white/30 hover:border-black/20',
+        'acrylic-panel acrylic-panel-glow acrylic-panel-shimmer acrylic-panel-enhanced-shadow',
+        'rounded-lg p-4 transition-all duration-300',
+        'relative z-10',
         className
       )}
       onMouseEnter={() => window.electronAPI.setClickThrough(false)}
       onMouseLeave={() => window.electronAPI.setClickThrough(true)}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between relative z-20">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={onToggleRecording}
             className={cn(
-              'h-8 w-8 rounded-full transition-all duration-200',
+              'h-8 w-8 rounded-full transition-all duration-200 relative z-20',
               isRecording
-                ? 'bg-red-700/30 hover:bg-red-600 text-white'
-                : 'bg-blue-700/30 hover:bg-blue-600 text-white'
+                ? effectiveTheme === 'dark'
+                  ? 'bg-red-700/40 hover:bg-red-600/60 text-red-100 border border-red-500/30'
+                  : 'bg-red-600/30 hover:bg-red-500/50 text-red-800 border border-red-400/40'
+                : effectiveTheme === 'dark'
+                  ? 'bg-blue-700/40 hover:bg-blue-600/60 text-blue-100 border border-blue-500/30'
+                  : 'bg-blue-600/30 hover:bg-blue-500/50 text-blue-800 border border-blue-400/40'
             )}
           >
             {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
           </Button>
           {isRecording && (
-            <Badge variant="destructive" className="animate-pulse">
+            <Badge
+              variant="destructive"
+              className={cn(
+                'animate-pulse border-0',
+                effectiveTheme === 'dark'
+                  ? 'bg-red-600/60 text-red-100'
+                  : 'bg-red-500/70 text-red-900'
+              )}
+            >
               {formatTime(recordingTime)}
             </Badge>
           )}
@@ -102,8 +92,10 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <Badge
             variant="secondary"
             className={cn(
-              'text-xs px-2 py-1',
-              effectiveTheme === 'dark' ? 'bg-white/10 text-white/70' : 'bg-black/10 text-black/70'
+              'text-xs border-0 py-1',
+              effectiveTheme === 'dark'
+                ? 'bg-white/15 text-white/90'
+                : 'bg-gray-200/70 text-gray-800'
             )}
           >
             Ask AI
@@ -111,15 +103,19 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <kbd
             className={cn(
               'px-2 py-1 rounded text-xs',
-              effectiveTheme === 'dark' ? 'bg-white/10' : 'bg-black/10'
+              effectiveTheme === 'dark'
+                ? 'bg-white/15 text-white/80'
+                : 'bg-gray-200/70 text-gray-700'
             )}
           >
-            ⌘
+            Ctrl
           </kbd>
           <kbd
             className={cn(
               'px-2 py-1 rounded text-xs',
-              effectiveTheme === 'dark' ? 'bg-white/10' : 'bg-black/10'
+              effectiveTheme === 'dark'
+                ? 'bg-white/15 text-white/80'
+                : 'bg-gray-200/70 text-gray-700'
             )}
           >
             ↵
@@ -128,10 +124,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
         <div className="flex items-center gap-2">
           <Badge
-            variant="secondary"
+            variant="outline"
             className={cn(
-              'text-xs px-2 py-1',
-              effectiveTheme === 'dark' ? 'bg-white/10 text-white/70' : 'bg-black/10 text-black/70'
+              'text-xs border-0 py-1',
+              effectiveTheme === 'dark'
+                ? 'bg-white/10 text-white/70'
+                : 'bg-gray-100/80 text-gray-600'
             )}
           >
             Show/Hide
@@ -139,68 +137,62 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <kbd
             className={cn(
               'px-2 py-1 rounded text-xs',
-              effectiveTheme === 'dark' ? 'bg-white/10' : 'bg-black/10'
+              effectiveTheme === 'dark'
+                ? 'bg-white/15 text-white/80'
+                : 'bg-gray-200/70 text-gray-700'
             )}
           >
-            ⌘
+            Ctrl
           </kbd>
           <kbd
             className={cn(
               'px-2 py-1 rounded text-xs',
-              effectiveTheme === 'dark' ? 'bg-white/10' : 'bg-black/10'
+              effectiveTheme === 'dark'
+                ? 'bg-white/15 text-white/80'
+                : 'bg-gray-200/70 text-gray-700'
             )}
           >
             \
           </kbd>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onSettingsClick}
-            className={cn(
-              'h-8 w-8',
-              effectiveTheme === 'dark'
-                ? 'bg-white/10 text-white/70 hover:text-white hover:bg-white/20'
-                : 'bg-black/10 text-black/70 hover:text-black hover:bg-black/20'
-            )}
-          >
-            <Settings size={16} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleClose}
-            className={cn(
-              'h-8 w-8',
-              effectiveTheme === 'dark'
-                ? 'bg-red-600/20 text-red-400 hover:text-white hover:bg-red-600'
-                : 'bg-red-600/20 text-red-600 hover:text-white hover:bg-red-600'
-            )}
-          >
-            <X size={16} />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onOpenSettings}
+          className={cn(
+            'h-8 w-8 relative z-20',
+            effectiveTheme === 'dark'
+              ? 'text-white/70 hover:text-white hover:bg-white/10'
+              : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200/50'
+          )}
+        >
+          <Settings size={16} />
+        </Button>
       </div>
 
-      {/* <form onSubmit={handleSubmit} className="flex gap-2">
+      {/* <form onSubmit={handleSubmit} className="flex gap-2 relative z-20">
         <Input
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Ask AI about what you see..."
           className={cn(
-            'flex-1 border focus:border-opacity-40',
+            'flex-1 border backdrop-blur-sm',
             effectiveTheme === 'dark'
               ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/40'
-              : 'bg-black/10 border-black/20 text-black placeholder:text-black/50 focus:border-black/40'
+              : 'bg-white/60 border-gray-300/60 text-gray-900 placeholder:text-gray-500 focus:border-gray-400/60'
           )}
         />
         <Button
           type="submit"
           disabled={!question.trim()}
-          className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white"
+          className={cn(
+            'transition-all duration-200',
+            effectiveTheme === 'dark'
+              ? 'bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white'
+              : 'bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white'
+          )}
         >
           Ask
         </Button>
@@ -209,13 +201,18 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {transcription && (
         <div
           className={cn(
-            'mt-3 p-2 border rounded-lg',
+            'mt-3 p-2 rounded-lg border relative z-20',
             effectiveTheme === 'dark'
-              ? 'bg-green-500/20 border-green-500/30 text-green-100'
-              : 'bg-green-500/20 border-green-500/30 text-green-800'
+              ? 'bg-green-500/20 border-green-500/30'
+              : 'bg-green-100/80 border-green-300/50'
           )}
         >
-          <p className="text-sm">
+          <p
+            className={cn(
+              'text-sm',
+              effectiveTheme === 'dark' ? 'text-green-100' : 'text-green-800'
+            )}
+          >
             <strong>Transcription:</strong> {transcription}
           </p>
         </div>

@@ -29,7 +29,6 @@ function createWindow(): void {
     x: 0,
     y: 0,
     frame: false,
-    titleBarStyle: 'hidden',
     transparent: true,
     alwaysOnTop: true,
     skipTaskbar: true,
@@ -119,18 +118,6 @@ function registerGlobalShortcuts(): void {
     }
   })
 
-  // Toggle theme (Ctrl+T)
-  globalShortcut.register('CommandOrControl+T', () => {
-    if (isVisible && mainWindow) {
-      mainWindow.webContents.send('toggle-theme')
-    }
-  })
-
-  // Close app (Ctrl+Q)
-  globalShortcut.register('CommandOrControl+Q', () => {
-    app.quit()
-  })
-
   // Panel movement shortcuts
   globalShortcut.register('CommandOrControl+Up', () => {
     if (isVisible && mainWindow) {
@@ -178,10 +165,6 @@ ipcMain.handle('set-click-through', (_event: IpcMainInvokeEvent, enabled: boolea
   if (mainWindow) {
     mainWindow.setIgnoreMouseEvents(enabled, { forward: true })
   }
-})
-
-ipcMain.handle('close-app', (): void => {
-  app.quit()
 })
 
 ipcMain.handle('get-screen-size', (): ScreenSize => {

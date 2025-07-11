@@ -1,9 +1,6 @@
 import { PanelGroup } from '@/components/PanelGroup'
 import { SettingsPanel } from '@/components/SettingsPanel'
-import { TitleBar } from '@/components/TitleBar'
 import { Toaster } from '@/components/ui/sonner'
-import { SettingsProvider } from '@/contexts/SettingsContext'
-import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
 import { AIService } from '@/services/aiService'
 import { AudioService } from '@/services/audioService'
 import { useEffect, useState } from 'react'
@@ -12,8 +9,7 @@ import './App.css'
 
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || 'your-google-api-key-here'
 
-function AppContent() {
-  const { theme, setTheme } = useTheme()
+function App() {
   const [aiService] = useState(() => new AIService(GOOGLE_API_KEY))
   const [audioService] = useState(() => new AudioService())
   const [response, setResponse] = useState('')
@@ -33,21 +29,12 @@ function AppContent() {
           if (isRecording) {
             handleToggleRecording()
           }
-          setIsSettingsOpen(false)
         }
       })
 
       // Handle microphone toggle
       window.electronAPI.onToggleMicrophone(() => {
         handleToggleRecording()
-      })
-
-      // Handle theme toggle
-      window.electronAPI.onToggleTheme(() => {
-        const themes = ['light', 'dark', 'system'] as const
-        const currentIndex = themes.indexOf(theme)
-        const nextIndex = (currentIndex + 1) % themes.length
-        setTheme(themes[nextIndex])
       })
 
       // Handle screenshot capture
@@ -61,10 +48,9 @@ function AppContent() {
     return () => {
       window.electronAPI.removeAllListeners('toggle-visibility')
       window.electronAPI.removeAllListeners('toggle-microphone')
-      window.electronAPI.removeAllListeners('toggle-theme')
       window.electronAPI.removeAllListeners('screenshot-captured')
     }
-  }, [isRecording, setTheme])
+  }, [isRecording])
 
   const handleToggleRecording = async () => {
     try {
@@ -133,24 +119,18 @@ function AppContent() {
     toast.success('Response cleared')
   }
 
-  const handleSettingsClick = () => {
-    setIsSettingsOpen(!isSettingsOpen)
+  const handleOpenSettings = () => {
+    setIsSettingsOpen(true)
+  }
+
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false)
   }
 
   return (
-    <div className="h-screen w-screen bg-transparent overflow-hidden relative select-none">
+    <div className="dark h-screen w-screen bg-transparent overflow-hidden relative select-none">
       {/* Full-screen transparent overlay */}
       <div className="absolute inset-0 pointer-events-none" />
-
-      {/* Title Bar */}
-      <TitleBar />
-
-      {/* Settings Panel */}
-      {isSettingsOpen && (
-        <div className="fixed top-4 right-4 z-50">
-          <SettingsPanel isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-        </div>
-      )}
 
       <PanelGroup
         onAskQuestion={handleAskQuestion}
@@ -161,8 +141,19 @@ function AppContent() {
         onToggleRecording={handleToggleRecording}
         transcription={transcription}
         isVisible={isVisible}
-        onSettingsClick={handleSettingsClick}
+        onOpenSettings={handleOpenSettings}
       />
+
+      {/* Settings Panel - positioned in top right of app */}
+      {isSettingsOpen && (
+        <div className="absolute top-4 right-4 z-50 pointer-events-auto">
+          <SettingsPanel
+            isOpen={isSettingsOpen}
+            onClose={handleCloseSettings}
+            className="max-w-[400px]"
+          />
+        </div>
+      )}
 
       <Toaster
         position="top-right"
@@ -176,16 +167,6 @@ function AppContent() {
         }}
       />
     </div>
-  )
-}
-
-function App() {
-  return (
-    <ThemeProvider>
-      <SettingsProvider>
-        <AppContent />
-      </SettingsProvider>
-    </ThemeProvider>
   )
 }
 
