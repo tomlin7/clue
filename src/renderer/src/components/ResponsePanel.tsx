@@ -5,6 +5,9 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
 import { Copy, Maximize2, Minimize2, Trash2 } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import rehypeHighlight from 'rehype-highlight'
+import remarkGfm from 'remark-gfm'
 
 interface ResponsePanelProps {
   response: string
@@ -40,22 +43,6 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
         console.error('Failed to copy text:', error)
       }
     }
-  }
-
-  const formatResponse = (text: string) => {
-    if (!text) return ''
-
-    // Basic markdown-like formatting with theme-aware styling
-    const codeClass =
-      effectiveTheme === 'dark'
-        ? 'bg-white/15 text-blue-200 px-1 rounded'
-        : 'bg-gray-200/80 text-blue-800 px-1 rounded'
-
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, `<code class="${codeClass}">$1</code>`)
-      .replace(/\n/g, '<br>')
   }
 
   return (
@@ -174,8 +161,153 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                 'prose prose-sm max-w-none',
                 effectiveTheme === 'dark' ? 'prose-invert' : 'prose-gray'
               )}
-              dangerouslySetInnerHTML={{ __html: formatResponse(response) }}
-            />
+            >
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight]}
+                components={{
+                  code: ({ className, children, ...props }) => {
+                    return (
+                      <code
+                        className={cn(
+                          className,
+                          effectiveTheme === 'dark'
+                            ? 'bg-white/15 text-blue-200 px-1 rounded'
+                            : 'bg-gray-200/80 text-blue-800 px-1 rounded'
+                        )}
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    )
+                  },
+                  pre: ({ children }) => (
+                    <pre
+                      className={cn(
+                        'p-4 rounded-lg overflow-x-auto',
+                        effectiveTheme === 'dark'
+                          ? 'bg-gray-800/50 border border-gray-700'
+                          : 'bg-gray-100 border border-gray-300'
+                      )}
+                    >
+                      {children}
+                    </pre>
+                  ),
+                  h1: ({ children }) => (
+                    <h1
+                      className={cn(
+                        'text-xl font-bold mb-4',
+                        effectiveTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                      )}
+                    >
+                      {children}
+                    </h1>
+                  ),
+                  h2: ({ children }) => (
+                    <h2
+                      className={cn(
+                        'text-lg font-semibold mb-3',
+                        effectiveTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                      )}
+                    >
+                      {children}
+                    </h2>
+                  ),
+                  h3: ({ children }) => (
+                    <h3
+                      className={cn(
+                        'text-md font-medium mb-2',
+                        effectiveTheme === 'dark' ? 'text-white' : 'text-gray-900'
+                      )}
+                    >
+                      {children}
+                    </h3>
+                  ),
+                  p: ({ children }) => (
+                    <p
+                      className={cn(
+                        'mb-3',
+                        effectiveTheme === 'dark' ? 'text-white/90' : 'text-gray-800'
+                      )}
+                    >
+                      {children}
+                    </p>
+                  ),
+                  ul: ({ children }) => (
+                    <ul
+                      className={cn(
+                        'list-disc pl-6 mb-3',
+                        effectiveTheme === 'dark' ? 'text-white/90' : 'text-gray-800'
+                      )}
+                    >
+                      {children}
+                    </ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol
+                      className={cn(
+                        'list-decimal pl-6 mb-3',
+                        effectiveTheme === 'dark' ? 'text-white/90' : 'text-gray-800'
+                      )}
+                    >
+                      {children}
+                    </ol>
+                  ),
+                  blockquote: ({ children }) => (
+                    <blockquote
+                      className={cn(
+                        'border-l-4 pl-4 py-2 mb-3 italic',
+                        effectiveTheme === 'dark'
+                          ? 'border-blue-400 bg-blue-500/10 text-blue-100'
+                          : 'border-blue-500 bg-blue-50 text-blue-800'
+                      )}
+                    >
+                      {children}
+                    </blockquote>
+                  ),
+                  table: ({ children }) => (
+                    <div className="overflow-x-auto mb-3">
+                      <table
+                        className={cn(
+                          'min-w-full border-collapse',
+                          effectiveTheme === 'dark'
+                            ? 'border border-gray-600'
+                            : 'border border-gray-300'
+                        )}
+                      >
+                        {children}
+                      </table>
+                    </div>
+                  ),
+                  th: ({ children }) => (
+                    <th
+                      className={cn(
+                        'border px-4 py-2 text-left font-semibold',
+                        effectiveTheme === 'dark'
+                          ? 'border-gray-600 bg-gray-700 text-white'
+                          : 'border-gray-300 bg-gray-100 text-gray-900'
+                      )}
+                    >
+                      {children}
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td
+                      className={cn(
+                        'border px-4 py-2',
+                        effectiveTheme === 'dark'
+                          ? 'border-gray-600 text-white/90'
+                          : 'border-gray-300 text-gray-800'
+                      )}
+                    >
+                      {children}
+                    </td>
+                  )
+                }}
+              >
+                {response}
+              </ReactMarkdown>
+            </div>
           ) : (
             <div className="text-center py-8">
               {/* <Sparkles

@@ -48,9 +48,16 @@ function createWindow(): void {
       preload: path.join(__dirname, '../preload/index.js'),
       backgroundThrottling: false,
       webSecurity: true,
-      offscreen: false // Ensure proper rendering
+      offscreen: false, // Ensure proper rendering
+      allowRunningInsecureContent: false,
+      experimentalFeatures: false,
+      enableBlinkFeatures: '',
+      disableBlinkFeatures: ''
     }
   })
+
+  // Set content protection to prevent screenshots/recording of the app
+  mainWindow.setContentProtection(true)
 
   // Set window to be click-through initially when not visible
   mainWindow.setIgnoreMouseEvents(true, { forward: true })
