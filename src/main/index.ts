@@ -1,74 +1,200 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import {
+  app,
+  BrowserWindow,
+  desktopCapturer,
+  globalShortcut,
+  ipcMain,
+  IpcMainInvokeEvent,
+  screen
+} from 'electron'
+import * as path from 'path'
+
+const isDev = process.env.NODE_ENV === 'development'
+
+let mainWindow: BrowserWindow | null = null
+let isVisible = true
+
+interface ScreenSize {
+  width: number
+  height: number
+}
 
 function createWindow(): void {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
-    show: false,
-    autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { width, height }: ScreenSize = primaryDisplay.bounds // Use bounds instead of workAreaSize for true fullscreen
+
+  mainWindow = new BrowserWindow({
+    width,
+    height,
+    x: 0,
+    y: 0,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    closable: true,
+    focusable: false,
+    hasShadow: false,
+    fullscreen: false, // We want manual fullscreen control
+    kiosk: false,
+    type: 'toolbar', // Helps with click-through on some platforms
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, '../preload/index.js'),
+      backgroundThrottling: false,
+      webSecurity: true,
+      offscreen: false // Ensure proper rendering
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+  // Set window to be click-through initially when not visible
+  mainWindow.setIgnoreMouseEvents(true, { forward: true })
+
+  const startUrl = isDev
+    ? 'http://localhost:5173'
+    : `file://${path.join(__dirname, '../renderer/index.html')}`
+
+  mainWindow.loadURL(startUrl)
+
+  if (isDev) {
+    mainWindow.webContents.openDevTools({ mode: 'detach' })
+  }
+
+  // Register global shortcuts
+  registerGlobalShortcuts()
+
+  mainWindow.on('closed', () => {
+    mainWindow = null
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
+  // Handle window focus to maintain click-through
+  mainWindow.on('focus', () => {
+    if (!isVisible && mainWindow) {
+      mainWindow.setIgnoreMouseEvents(true, { forward: true })
+    }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+  // Ensure window stays on top and maintains transparency
+  mainWindow.on('show', () => {
+    if (mainWindow) {
+      mainWindow.setAlwaysOnTop(true, 'screen-saver')
+    }
+  })
+}
+
+function registerGlobalShortcuts(): void {
+  // Toggle visibility (Ctrl+\)
+  globalShortcut.register('CommandOrControl+\\', () => {
+    isVisible = !isVisible
+    if (mainWindow) {
+      if (isVisible) {
+        mainWindow.show()
+        mainWindow.setIgnoreMouseEvents(false) // Allow interaction when visible
+        mainWindow.setAlwaysOnTop(true, 'screen-saver')
+      } else {
+        mainWindow.setIgnoreMouseEvents(true, { forward: true }) // Click-through when hidden
+        mainWindow.hide()
+      }
+      mainWindow.webContents.send('toggle-visibility', isVisible)
+    }
+  })
+
+  // Screenshot and analyze (Ctrl+Enter)
+  globalShortcut.register('CommandOrControl+Return', () => {
+    if (isVisible) {
+      captureScreen()
+    }
+  })
+
+  // Toggle microphone (Ctrl+M)
+  globalShortcut.register('CommandOrControl+M', () => {
+    if (isVisible && mainWindow) {
+      mainWindow.webContents.send('toggle-microphone')
+    }
+  })
+
+  // Panel movement shortcuts
+  globalShortcut.register('CommandOrControl+Up', () => {
+    if (isVisible && mainWindow) {
+      mainWindow.webContents.send('move-panels', 'up')
+    }
+  })
+
+  globalShortcut.register('CommandOrControl+Down', () => {
+    if (isVisible && mainWindow) {
+      mainWindow.webContents.send('move-panels', 'down')
+    }
+  })
+
+  globalShortcut.register('CommandOrControl+Left', () => {
+    if (isVisible && mainWindow) {
+      mainWindow.webContents.send('move-panels', 'left')
+    }
+  })
+
+  globalShortcut.register('CommandOrControl+Right', () => {
+    if (isVisible && mainWindow) {
+      mainWindow.webContents.send('move-panels', 'right')
+    }
+  })
+}
+
+async function captureScreen(): Promise<void> {
+  try {
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: 1920, height: 1080 }
+    })
+
+    if (sources.length > 0 && mainWindow) {
+      const screenshot = sources[0].thumbnail.toDataURL()
+      mainWindow.webContents.send('screenshot-captured', screenshot)
+    }
+  } catch (error) {
+    console.error('Error capturing screen:', error)
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+// IPC handlers
+ipcMain.handle('set-click-through', (_event: IpcMainInvokeEvent, enabled: boolean): void => {
+  if (mainWindow) {
+    mainWindow.setIgnoreMouseEvents(enabled, { forward: true })
+  }
+})
+
+ipcMain.handle('get-screen-size', (): ScreenSize => {
+  const { width, height } = screen.getPrimaryDisplay().bounds // Use bounds for true fullscreen
+  return { width, height }
+})
+
 app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
-
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-
   createWindow()
 
-  app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow()
+    }
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
+})
+
+app.on('before-quit', () => {
+  if (mainWindow) {
+    mainWindow.removeAllListeners('close')
+    mainWindow.close()
+  }
+})

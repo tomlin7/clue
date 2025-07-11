@@ -1,22 +1,33 @@
-import { contextBridge } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
-// Custom APIs for renderer
-const api = {}
+export interface ElectronAPI {
+  // Window management
+  setClickThrough: (enabled: boolean) => Promise<void>
+  getScreenSize: () => Promise<{ width: number; height: number }>
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
-  } catch (error) {
-    console.error(error)
-  }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
-  // @ts-ignore (define in dts)
-  window.api = api
+  // Event listeners
+  onToggleVisibility: (callback: (event: IpcRendererEvent, visible: boolean) => void) => void
+  onToggleMicrophone: (callback: (event: IpcRendererEvent) => void) => void
+  onMovePanels: (callback: (event: IpcRendererEvent, direction: string) => void) => void
+  onScreenshotCaptured: (callback: (event: IpcRendererEvent, imageData: string) => void) => void
+
+  // Remove listeners
+  removeAllListeners: (channel: string) => void
 }
+
+const electronAPI: ElectronAPI = {
+  // Window management
+  setClickThrough: (enabled: boolean) => ipcRenderer.invoke('set-click-through', enabled),
+  getScreenSize: () => ipcRenderer.invoke('get-screen-size'),
+
+  // Event listeners
+  onToggleVisibility: (callback) => ipcRenderer.on('toggle-visibility', callback),
+  onToggleMicrophone: (callback) => ipcRenderer.on('toggle-microphone', callback),
+  onMovePanels: (callback) => ipcRenderer.on('move-panels', callback),
+  onScreenshotCaptured: (callback) => ipcRenderer.on('screenshot-captured', callback),
+
+  // Remove listeners
+  removeAllListeners: (channel: string) => ipcRenderer.removeAllListeners(channel)
+}
+
+contextBridge.exposeInMainWorld('electronAPI', electronAPI)

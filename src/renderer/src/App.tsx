@@ -1,162 +1,151 @@
-import { useState, useEffect, useCallback } from 'react';
-import { ControlPanel } from './components/ControlPanel';
-import { ResponsePanel } from './components/ResponsePanel';
-import { useVoiceRecognition } from './hooks/useVoiceRecognition';
-import { useAIChat } from './hooks/useAIChat';
-import './styles/globals.css';
+import { PanelGroup } from '@/components/PanelGroup'
+import { Toaster } from '@/components/ui/sonner'
+import { AIService } from '@/services/aiService'
+import { AudioService } from '@/services/audioService'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import './App.css'
 
-interface Message {
-  id: string;
-  type: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  screenshot?: string;
-}
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || 'your-google-api-key-here'
 
 function App() {
-  const [isVisible, setIsVisible] = useState(true);
-  const [panelPosition, setPanelPosition] = useState({ x: 100, y: 100 });
-  const [isAudioCapture, setIsAudioCapture] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [aiService] = useState(() => new AIService(GOOGLE_API_KEY))
+  const [audioService] = useState(() => new AudioService())
+  const [response, setResponse] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [isRecording, setIsRecording] = useState(false)
+  const [transcription, setTranscription] = useState('')
 
-  const {
-    isRecording,
-    transcript,
-    startRecording,
-    stopRecording,
-    clearTranscript,
-  } = useVoiceRecognition();
-
-  const {
-    sendMessage,
-    isLoading,
-  } = useAIChat();
-
-  // Handle Electron IPC events
   useEffect(() => {
-    if (window.electronAPI) {
-      // Get initial panel position
-      window.electronAPI.getPanelPosition().then(setPanelPosition);
+    const setupElectronListeners = () => {
+      // Handle visibility toggle
+      window.electronAPI.onToggleVisibility((_, visible: boolean) => {
+        setIsVisible(visible)
+        if (!visible) {
+          // Clean up when hidden
+          if (isRecording) {
+            handleToggleRecording()
+          }
+        }
+      })
 
-      // Listen for events from main process
-      window.electronAPI.onToggleVisibility(setIsVisible);
-      window.electronAPI.onUpdatePanelPosition(setPanelPosition);
-      window.electronAPI.onCaptureAndSend(handleCaptureAndSend);
-      window.electronAPI.onToggleTranscription(handleToggleTranscription);
+      // Handle microphone toggle
+      window.electronAPI.onToggleMicrophone(() => {
+        handleToggleRecording()
+      })
+
+      // Handle screenshot capture
+      window.electronAPI.onScreenshotCaptured((_, imageData: string) => {
+        handleScreenshotAnalysis(imageData)
+      })
     }
-  }, []);
 
-  const handlePanelInteractionStart = useCallback(() => {
-    if (window.electronAPI) {
-      window.electronAPI.panelInteractionStart();
+    setupElectronListeners()
+
+    return () => {
+      window.electronAPI.removeAllListeners('toggle-visibility')
+      window.electronAPI.removeAllListeners('toggle-microphone')
+      window.electronAPI.removeAllListeners('screenshot-captured')
     }
-  }, []);
+  }, [isRecording])
 
-  const handlePanelInteractionEnd = useCallback(() => {
-    if (window.electronAPI) {
-      window.electronAPI.panelInteractionEnd();
-    }
-  }, []);
-
-  const handleToggleRecording = useCallback(() => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
-  }, [isRecording, startRecording, stopRecording]);
-
-  const handleToggleTranscription = useCallback(() => {
-    handleToggleRecording();
-  }, [handleToggleRecording]);
-
-  const handleToggleAudioCapture = useCallback(() => {
-    setIsAudioCapture(prev => !prev);
-  }, []);
-
-  const handleCapture = useCallback(async () => {
-    if (window.electronAPI) {
-      const screenshot = await window.electronAPI.captureScreen();
-      await handleCaptureAndSend(screenshot || undefined);
-    }
-  }, []);
-
-  const handleCaptureAndSend = useCallback(async (screenshot?: string) => {
+  const handleToggleRecording = async () => {
     try {
-      let screenshotData = screenshot;
-      if (!screenshotData && window.electronAPI) {
-        screenshotData = (await window.electronAPI.captureScreen()) || undefined;
+      if (isRecording) {
+        await audioService.stopRecording()
+        setIsRecording(false)
+        const currentTranscription = audioService.getCurrentTranscription()
+        setTranscription(currentTranscription)
+        toast.success('Recording stopped')
+      } else {
+        await audioService.startRecording()
+        setIsRecording(true)
+        setTranscription('')
+        audioService.clearTranscription()
+        toast.success('Recording started')
+      }
+    } catch (error) {
+      console.error('Error toggling recording:', error)
+      toast.error('Failed to toggle recording')
+    }
+  }
+
+  const handleScreenshotAnalysis = async (imageData: string) => {
+    if (!imageData) return
+
+    setIsLoading(true)
+    try {
+      const currentTranscription = audioService.getCurrentTranscription()
+      const analysis = await aiService.analyzeScreenshot(imageData, currentTranscription)
+      setResponse(analysis)
+
+      // Clear transcription after use
+      if (currentTranscription) {
+        setTranscription('')
+        audioService.clearTranscription()
       }
 
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        type: 'user',
-        content: transcript || 'Analyze this screen',
-        timestamp: new Date(),
-        screenshot: screenshotData || undefined,
-      };
-
-      setMessages(prev => [...prev, userMessage]);
-
-      // Clear transcript after using it
-      clearTranscript();
-
-      // Send to AI
-      const response = await sendMessage(
-        userMessage.content,
-        screenshotData || undefined
-      );
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: response,
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
+      toast.success('Screenshot analyzed')
     } catch (error) {
-      console.error('Error in capture and send:', error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: 'Sorry, I encountered an error processing your request.',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      console.error('Error analyzing screenshot:', error)
+      toast.error('Failed to analyze screenshot')
+    } finally {
+      setIsLoading(false)
     }
-  }, [transcript, sendMessage, clearTranscript]);
+  }
 
-  const handleClearMessages = useCallback(() => {
-    setMessages([]);
-  }, []);
+  const handleAskQuestion = async (question: string) => {
+    if (!question.trim()) return
+
+    setIsLoading(true)
+    try {
+      const answer = await aiService.askQuestion(question)
+      setResponse(answer)
+      toast.success('Question answered')
+    } catch (error) {
+      console.error('Error asking question:', error)
+      toast.error('Failed to get answer')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleClearResponse = () => {
+    setResponse('')
+    aiService.clearHistory()
+    toast.success('Response cleared')
+  }
 
   return (
-    <div className="w-screen h-screen overflow-hidden">
-      <ControlPanel
-        isVisible={isVisible}
-        position={panelPosition}
-        onPanelInteractionStart={handlePanelInteractionStart}
-        onPanelInteractionEnd={handlePanelInteractionEnd}
+    <div className="dark h-screen w-screen bg-transparent overflow-hidden relative select-none">
+      {/* Full-screen transparent overlay */}
+      <div className="absolute inset-0 pointer-events-none" />
+
+      <PanelGroup
+        onAskQuestion={handleAskQuestion}
+        response={response}
+        isLoading={isLoading}
+        onClearResponse={handleClearResponse}
         isRecording={isRecording}
         onToggleRecording={handleToggleRecording}
-        isAudioCapture={isAudioCapture}
-        onToggleAudioCapture={handleToggleAudioCapture}
-        onCapture={handleCapture}
-      />
-      
-      <ResponsePanel
+        transcription={transcription}
         isVisible={isVisible}
-        position={panelPosition}
-        onPanelInteractionStart={handlePanelInteractionStart}
-        onPanelInteractionEnd={handlePanelInteractionEnd}
-        messages={messages}
-        isLoading={isLoading}
-        onClearMessages={handleClearMessages}
+      />
+
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)'
+          }
+        }}
       />
     </div>
-  );
+  )
 }
 
-export default App;
-
+export default App
