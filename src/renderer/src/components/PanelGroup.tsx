@@ -11,6 +11,7 @@ interface PanelGroupProps {
   onToggleRecording: () => void
   transcription: string
   isVisible: boolean
+  onSettingsClick: () => void
 }
 
 export const PanelGroup: React.FC<PanelGroupProps> = ({
@@ -21,7 +22,8 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
   isRecording,
   onToggleRecording,
   transcription,
-  isVisible
+  isVisible,
+  onSettingsClick
 }) => {
   const [position, setPosition] = useState({ x: 100, y: 100 })
   const [screenSize, setScreenSize] = useState({ width: 1920, height: 1080 })
@@ -86,7 +88,7 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
       }}
     >
       {/* Subtle position indicator */}
-      <div className="absolute -top-2 -left-2 w-1 h-1 bg-blue-400/50 rounded-full opacity-60 pointer-events-none" />
+      {/* <div className="absolute -top-2 -left-2 w-1 h-1 bg-blue-400/50 rounded-full opacity-60 pointer-events-none" /> */}
 
       <div className="space-y-4 pointer-events-auto">
         <ControlPanel
@@ -94,6 +96,7 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
           isRecording={isRecording}
           onToggleRecording={onToggleRecording}
           transcription={transcription}
+          onSettingsClick={onSettingsClick}
           className="animate-in fade-in-0 slide-in-from-top-4 duration-300"
         />
 
@@ -101,6 +104,7 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
           response={response}
           isLoading={isLoading}
           onClear={onClearResponse}
+          onFollowUp={onAskQuestion}
           className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300"
         />
       </div>
