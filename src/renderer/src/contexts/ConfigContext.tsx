@@ -260,11 +260,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
   }
 
   if (isLoading || !config) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-white">Loading configuration...</div>
-      </div>
-    )
+    return null
   }
 
   return (

@@ -486,7 +486,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
         </div>
 
         {/* Reset Settings */}
-        <div className="pt-4 border-t border-zinc-500/10">
+        <div className="pt-4 border-t border-zinc-500/10 space-y-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              localStorage.removeItem('onboarding-completed')
+              window.location.reload()
+            }}
+            className={cn(
+              'flex items-center gap-2 w-full',
+              effectiveTheme === 'dark'
+                ? 'text-blue-400 hover:bg-blue-500/20'
+                : 'text-blue-600 hover:bg-blue-500/20'
+            )}
+          >
+            <Palette size={14} />
+            Reset Onboarding
+          </Button>
           <Button
             variant="ghost"
             size="sm"

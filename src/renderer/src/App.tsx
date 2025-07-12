@@ -1,3 +1,4 @@
+import { OnboardingPanel } from '@/components/onboarding'
 import { PanelGroup } from '@/components/PanelGroup'
 import { SettingsPanel } from '@/components/SettingsPanel'
 import { Toaster } from '@/components/ui/sonner'
@@ -21,6 +22,7 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [conversationSessions, setConversationSessions] = useState<ConversationSummary[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>()
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   // Initialize AI service when API key is available
   useEffect(() => {
@@ -266,37 +268,61 @@ function App() {
     setIsSettingsOpen(false)
   }
 
+  // Check if onboarding is completed
+  useEffect(() => {
+    const isOnboardingCompleted = localStorage.getItem('onboarding-completed')
+    if (!isOnboardingCompleted) {
+      setShowOnboarding(true)
+    }
+  }, [])
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false)
+  }
+
   return (
     <div className="dark h-screen w-screen bg-transparent overflow-hidden relative select-none">
       {/* Full-screen transparent overlay */}
       <div className="absolute inset-0 pointer-events-none" />
 
-      <PanelGroup
-        onAskQuestion={handleAskQuestion}
-        response={response}
-        isLoading={isLoading}
-        onClearResponse={handleClearResponse}
-        onNewSession={handleNewSession}
-        onSelectSession={handleSelectSession}
-        onDeleteSession={handleDeleteSession}
-        isRecording={isRecording}
-        onToggleRecording={handleToggleRecording}
-        transcription={transcription}
-        isVisible={isVisible}
-        onOpenSettings={handleToggleSettings}
-        isSettingsOpen={isSettingsOpen}
-        conversationSessions={conversationSessions}
-        currentSessionId={currentSessionId}
-      />
-
-      {/* Settings Panel - positioned in top right of app */}
-      {isSettingsOpen && (
-        <div className="absolute top-4 right-4 z-50 pointer-events-auto">
-          <SettingsPanel
-            isOpen={isSettingsOpen}
-            onClose={handleCloseSettings}
-            className="max-w-[400px]"
+      {/* Show main panels only if onboarding is completed */}
+      {!showOnboarding && (
+        <>
+          <PanelGroup
+            onAskQuestion={handleAskQuestion}
+            response={response}
+            isLoading={isLoading}
+            onClearResponse={handleClearResponse}
+            onNewSession={handleNewSession}
+            onSelectSession={handleSelectSession}
+            onDeleteSession={handleDeleteSession}
+            isRecording={isRecording}
+            onToggleRecording={handleToggleRecording}
+            transcription={transcription}
+            isVisible={isVisible}
+            onOpenSettings={handleToggleSettings}
+            isSettingsOpen={isSettingsOpen}
+            conversationSessions={conversationSessions}
+            currentSessionId={currentSessionId}
           />
+
+          {/* Settings Panel - positioned in top right of app */}
+          {isSettingsOpen && (
+            <div className="absolute top-4 right-4 z-50 pointer-events-auto">
+              <SettingsPanel
+                isOpen={isSettingsOpen}
+                onClose={handleCloseSettings}
+                className="max-w-[400px]"
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Onboarding Panel - shown only once at app start */}
+      {showOnboarding && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-auto">
+          <OnboardingPanel onComplete={handleOnboardingComplete} className="w-[450px]" />
         </div>
       )}
 
