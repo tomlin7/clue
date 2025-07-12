@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { CardContent } from '@/components/ui/card'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
-import { Copy, Maximize2, Minimize2, Trash2 } from 'lucide-react'
+import { Copy, History, Maximize2, Minimize2, Plus, Trash2 } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
@@ -13,6 +13,9 @@ interface ResponsePanelProps {
   response: string
   isLoading: boolean
   onClear: () => void
+  onNewSession: () => void
+  onToggleHistory: () => void
+  isHistoryVisible: boolean
   className?: string
 }
 
@@ -20,10 +23,14 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   response,
   isLoading,
   onClear,
+  onNewSession,
+  onToggleHistory,
+  isHistoryVisible,
   className
 }) => {
   const [isMinimized, setIsMinimized] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [contentHeight, setContentHeight] = useState(0)
   const contentRef = useRef<HTMLDivElement>(null)
   const { effectiveTheme } = useTheme()
 
@@ -34,6 +41,40 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
       setIsAnalyzing(false)
     }
   }, [isLoading])
+
+  // Calculate dynamic height based on content
+  useEffect(() => {
+    if (contentRef.current && !isMinimized) {
+      const scrollHeight = contentRef.current.scrollHeight
+      // Header height: ~50px, padding: ~32px, buffer: ~20px
+      const headerAndPaddingHeight = 102
+      const minContentHeight = 120
+      const maxContentHeight = 600
+      const emptyStateHeight = 120
+
+      if (!response.trim() && !isLoading) {
+        setContentHeight(emptyStateHeight)
+      } else if (isLoading) {
+        setContentHeight(180) // Fixed height for loading state
+      } else {
+        const calculatedHeight = Math.min(
+          Math.max(scrollHeight + headerAndPaddingHeight, minContentHeight),
+          maxContentHeight
+        )
+        setContentHeight(calculatedHeight)
+      }
+    } else if (isMinimized) {
+      setContentHeight(60)
+    }
+  }, [response, isMinimized, isLoading])
+
+  // Don't auto-minimize, let user control it
+  useEffect(() => {
+    if (!response.trim() && !isLoading && !isMinimized) {
+      // Keep panel open but at minimum size when no content
+      setContentHeight(120)
+    }
+  }, [response, isLoading, isMinimized])
 
   const handleCopy = async () => {
     if (response) {
@@ -47,12 +88,13 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
 
   return (
     <div
-      className={cn(
-        'acrylic-panel',
-        'rounded-lg panel-transition relative z-10',
-        isMinimized ? 'h-16' : 'min-h-[300px] max-h-[600px]',
-        className
-      )}
+      className={cn('acrylic-panel', 'rounded-lg panel-transition relative z-10', className)}
+      style={{
+        height: isMinimized ? '60px' : `${contentHeight}px`,
+        minHeight: isMinimized ? '60px' : '120px',
+        maxHeight: '600px',
+        transition: 'height 0.3s ease-in-out'
+      }}
       onMouseEnter={() => window.electronAPI.setClickThrough(false)}
       onMouseLeave={() => window.electronAPI.setClickThrough(true)}
     >
@@ -86,6 +128,40 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onNewSession}
+            className={cn(
+              'h-8 w-8 relative z-20',
+              effectiveTheme === 'dark'
+                ? 'text-white/70 hover:text-white hover:bg-white/10'
+                : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
+            )}
+            title="Start new conversation"
+          >
+            <Plus size={14} />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleHistory}
+            className={cn(
+              'h-8 w-8 relative z-20',
+              isHistoryVisible
+                ? effectiveTheme === 'dark'
+                  ? 'text-blue-400 bg-blue-500/20'
+                  : 'text-blue-600 bg-blue-100/60'
+                : effectiveTheme === 'dark'
+                  ? 'text-white/70 hover:text-white hover:bg-white/10'
+                  : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
+            )}
+            title="Toggle conversation history"
+          >
+            <History size={14} />
+          </Button>
+
           <Button
             variant="ghost"
             size="icon"
@@ -134,7 +210,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
 
       {/* Content */}
       {!isMinimized && (
-        <CardContent className="p-4 overflow-y-auto max-h-[500px] relative z-20">
+        <CardContent className="p-4 overflow-y-auto flex-1 relative z-20">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="flex items-center gap-2">
@@ -304,13 +380,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
               </ReactMarkdown>
             </div>
           ) : (
-            <div className="text-center py-8">
-              {/* <Sparkles
-                className={cn(
-                  'h-12 w-12 mx-auto mb-4',
-                  effectiveTheme === 'dark' ? 'text-white/30' : 'text-gray-400'
-                )}
-              /> */}
+            <div className="text-center py-4">
               <p className={cn(effectiveTheme === 'dark' ? 'text-white/50' : 'text-zinc-500')}>
                 <Badge
                   className={cn(
@@ -322,6 +392,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                 >
                   Ctrl+Enter
                 </Badge>{' '}
+                to analyze screen
               </p>
             </div>
           )}

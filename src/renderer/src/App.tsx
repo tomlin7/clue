@@ -3,7 +3,7 @@ import { SettingsPanel } from '@/components/SettingsPanel'
 import { Toaster } from '@/components/ui/sonner'
 import { AIService } from '@/services/aiService'
 import { AudioService } from '@/services/audioService'
-import { BaseMessage } from '@langchain/core/messages'
+import { ConversationSummary } from '@/types/conversation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import './App.css'
@@ -19,20 +19,23 @@ function App() {
   const [isRecording, setIsRecording] = useState(false)
   const [transcription, setTranscription] = useState('')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [conversationHistory, setConversationHistory] = useState<BaseMessage[]>([])
+  const [conversationSessions, setConversationSessions] = useState<ConversationSummary[]>([])
+  const [currentSessionId, setCurrentSessionId] = useState<string | undefined>()
 
-  // Update conversation history when aiService changes
+  // Update conversation sessions when aiService changes
   useEffect(() => {
-    const updateHistory = () => {
-      const history = aiService.getConversationHistory()
-      setConversationHistory(history)
+    const updateSessions = () => {
+      const sessions = aiService.getSessionSummaries()
+      const currentSession = aiService.getCurrentSession()
+      setConversationSessions(sessions)
+      setCurrentSessionId(currentSession?.id)
     }
 
     // Update immediately
-    updateHistory()
+    updateSessions()
 
     // Set up interval to check for updates
-    const interval = setInterval(updateHistory, 1000)
+    const interval = setInterval(updateSessions, 1000)
 
     return () => clearInterval(interval)
   }, [aiService])
@@ -100,8 +103,11 @@ function App() {
       const analysis = await aiService.analyzeScreenshot(imageData, currentTranscription)
       setResponse(analysis)
 
-      // Update conversation history
-      setConversationHistory(aiService.getConversationHistory())
+      // Update conversation sessions
+      const sessions = aiService.getSessionSummaries()
+      const currentSession = aiService.getCurrentSession()
+      setConversationSessions(sessions)
+      setCurrentSessionId(currentSession?.id)
 
       // Clear transcription after use
       if (currentTranscription) {
@@ -126,8 +132,11 @@ function App() {
       const answer = await aiService.askQuestion(question)
       setResponse(answer)
 
-      // Update conversation history
-      setConversationHistory(aiService.getConversationHistory())
+      // Update conversation sessions
+      const sessions = aiService.getSessionSummaries()
+      const currentSession = aiService.getCurrentSession()
+      setConversationSessions(sessions)
+      setCurrentSessionId(currentSession?.id)
 
       toast.success('Question answered')
     } catch (error) {
@@ -142,10 +151,44 @@ function App() {
     setResponse('')
     aiService.clearHistory()
 
-    // Update conversation history
-    setConversationHistory(aiService.getConversationHistory())
+    // Update conversation sessions
+    const sessions = aiService.getSessionSummaries()
+    const currentSession = aiService.getCurrentSession()
+    setConversationSessions(sessions)
+    setCurrentSessionId(currentSession?.id)
 
     toast.success('Response cleared')
+  }
+
+  const handleNewSession = () => {
+    const newSession = aiService.createNewSession()
+    setResponse('')
+
+    // Update conversation sessions
+    const sessions = aiService.getSessionSummaries()
+    setConversationSessions(sessions)
+    setCurrentSessionId(newSession.id)
+
+    toast.success('New conversation started')
+  }
+
+  const handleSelectSession = (sessionId: string) => {
+    aiService.loadSession(sessionId)
+    setResponse('')
+    setCurrentSessionId(sessionId)
+    toast.success('Conversation loaded')
+  }
+
+  const handleDeleteSession = (sessionId: string) => {
+    aiService.deleteSession(sessionId)
+
+    // Update conversation sessions
+    const sessions = aiService.getSessionSummaries()
+    const currentSession = aiService.getCurrentSession()
+    setConversationSessions(sessions)
+    setCurrentSessionId(currentSession?.id)
+
+    toast.success('Conversation deleted')
   }
 
   const handleOpenSettings = () => {
@@ -166,12 +209,16 @@ function App() {
         response={response}
         isLoading={isLoading}
         onClearResponse={handleClearResponse}
+        onNewSession={handleNewSession}
+        onSelectSession={handleSelectSession}
+        onDeleteSession={handleDeleteSession}
         isRecording={isRecording}
         onToggleRecording={handleToggleRecording}
         transcription={transcription}
         isVisible={isVisible}
         onOpenSettings={handleOpenSettings}
-        conversationHistory={conversationHistory}
+        conversationSessions={conversationSessions}
+        currentSessionId={currentSessionId}
       />
 
       {/* Settings Panel - positioned in top right of app */}

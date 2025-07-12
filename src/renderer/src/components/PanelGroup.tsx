@@ -1,4 +1,4 @@
-import { BaseMessage } from '@langchain/core/messages'
+import { ConversationSummary } from '@/types/conversation'
 import React, { useEffect, useState } from 'react'
 import { ControlPanel } from './ControlPanel'
 import { ConversationHistory } from './ConversationHistory'
@@ -9,12 +9,16 @@ interface PanelGroupProps {
   response: string
   isLoading: boolean
   onClearResponse: () => void
+  onNewSession: () => void
+  onSelectSession: (sessionId: string) => void
+  onDeleteSession: (sessionId: string) => void
   isRecording: boolean
   onToggleRecording: () => void
   transcription: string
   isVisible: boolean
   onOpenSettings: () => void
-  conversationHistory?: BaseMessage[]
+  conversationSessions?: ConversationSummary[]
+  currentSessionId?: string
 }
 
 export const PanelGroup: React.FC<PanelGroupProps> = ({
@@ -22,15 +26,20 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
   response,
   isLoading,
   onClearResponse,
+  onNewSession,
+  onSelectSession,
+  onDeleteSession,
   isRecording,
   onToggleRecording,
   transcription,
   isVisible,
   onOpenSettings,
-  conversationHistory = []
+  conversationSessions = [],
+  currentSessionId
 }) => {
   const [position, setPosition] = useState({ x: 100, y: 100 })
   const [screenSize, setScreenSize] = useState({ width: 1920, height: 1080 })
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false)
 
   useEffect(() => {
     const getScreenSize = async () => {
@@ -108,13 +117,20 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
           response={response}
           isLoading={isLoading}
           onClear={onClearResponse}
+          onNewSession={onNewSession}
+          onToggleHistory={() => setIsHistoryVisible(!isHistoryVisible)}
+          isHistoryVisible={isHistoryVisible}
           className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300"
         />
 
-        {/* Show conversation history when there are previous messages */}
-        {conversationHistory.length > 0 && (
-          <ConversationHistory messages={conversationHistory} isVisible={true} />
-        )}
+        {/* Show conversation history when visible */}
+        <ConversationHistory
+          sessions={conversationSessions}
+          isVisible={isHistoryVisible}
+          onSelectSession={onSelectSession}
+          onDeleteSession={onDeleteSession}
+          currentSessionId={currentSessionId}
+        />
       </div>
     </div>
   )
