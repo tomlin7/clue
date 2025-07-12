@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Slider } from '@/components/ui/slider'
 import { useSettings } from '@/contexts/SettingsContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
@@ -19,8 +20,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
 
   if (!isOpen) return null
 
-  const handleOpacityChange = (value: string) => {
-    const opacity = Math.max(10, Math.min(100, parseInt(value) || 80))
+  const handleOpacityChange = (values: number[]) => {
+    const opacity = Math.round(Math.max(10, Math.min(100, values[0])))
+    updateSettings({ opacity })
+  }
+
+  const handleOpacityInputChange = (value: string) => {
+    const numValue = parseFloat(value)
+    if (isNaN(numValue)) return
+
+    const opacity = Math.round(Math.max(10, Math.min(100, numValue)))
     updateSettings({ opacity })
   }
 
@@ -143,24 +152,30 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           >
             Panel Opacity ({settings.opacity}%)
           </h3>
-          <div className="flex items-center gap-2">
-            <Input
-              type="range"
-              min="10"
-              max="100"
-              value={settings.opacity}
-              onChange={(e) => handleOpacityChange(e.target.value)}
+          <div className="flex items-center gap-3">
+            <Slider
+              value={[settings.opacity]}
+              onValueChange={handleOpacityChange}
+              min={10}
+              max={100}
+              step={1}
               className={cn(
-                'flex-1 border-zinc-500/10',
-                effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
+                'flex-1',
+                '[&_[data-slot=slider-track]]:bg-zinc-500/20',
+                '[&_[data-slot=slider-range]]:bg-blue-500',
+                '[&_[data-slot=slider-thumb]]:bg-white [&_[data-slot=slider-thumb]]:border-blue-500',
+                effectiveTheme === 'dark'
+                  ? '[&_[data-slot=slider-track]]:bg-white/20 [&_[data-slot=slider-thumb]]:bg-white'
+                  : '[&_[data-slot=slider-track]]:bg-zinc-500/20 [&_[data-slot=slider-thumb]]:bg-white'
               )}
             />
             <Input
               type="number"
-              min="10"
-              max="100"
+              min={10}
+              max={100}
+              step={1}
               value={settings.opacity}
-              onChange={(e) => handleOpacityChange(e.target.value)}
+              onChange={(e) => handleOpacityInputChange(e.target.value)}
               className={cn(
                 'w-16 border-zinc-500/10',
                 effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
