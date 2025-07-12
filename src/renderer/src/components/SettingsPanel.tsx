@@ -6,7 +6,7 @@ import { useConfig } from '@/contexts/ConfigContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
 import { ExternalLink, FileText, Moon, Palette, RotateCcw, Sun, X } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SettingsPanelProps {
   isOpen: boolean
@@ -15,19 +15,60 @@ interface SettingsPanelProps {
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, className }) => {
-  const { config, updateConfig, selectMode, getSelectedMode, resetConfig, addMode, deleteMode } =
+  const { config, updateConfig, updateOpacity, selectMode, getSelectedMode, resetConfig } =
     useConfig()
   const { theme, setTheme, effectiveTheme } = useTheme()
-  const [showAddMode, setShowAddMode] = useState(false)
-  const [newMode, setNewMode] = useState({ name: '', icon: '', prompt: '', category: '' })
+  // const [showAddMode, setShowAddMode] = useState(false)
+  // const [newMode, setNewMode] = useState({ name: '', icon: '', prompt: '', category: '' })
+
+  // Local state for smooth opacity updates
+  const [localOpacity, setLocalOpacity] = useState(config.opacity)
+  const debouncedUpdateRef = useRef<NodeJS.Timeout | undefined>(undefined)
+
+  // Sync local state with config changes (e.g., from other sources)
+  useEffect(() => {
+    setLocalOpacity(config.opacity)
+  }, [config.opacity])
+
+  // Cleanup debounced update on unmount
+  useEffect(() => {
+    return () => {
+      if (debouncedUpdateRef.current) {
+        clearTimeout(debouncedUpdateRef.current)
+      }
+    }
+  }, [])
 
   if (!isOpen) return null
 
   const selectedMode = getSelectedMode()
 
+  // Debounced function to update config
+  const debouncedUpdateConfig = useCallback(
+    (opacity: number) => {
+      if (debouncedUpdateRef.current) {
+        clearTimeout(debouncedUpdateRef.current)
+      }
+
+      debouncedUpdateRef.current = setTimeout(() => {
+        updateOpacity(opacity)
+      }, 2000) // 150ms delay for debouncing
+    },
+    [updateOpacity]
+  )
+
   const handleOpacityChange = (values: number[]) => {
     const opacity = Math.round(Math.max(10, Math.min(100, values[0])))
-    updateConfig({ opacity })
+
+    // Update local state immediately for smooth UI
+    setLocalOpacity(opacity)
+
+    // Apply opacity to CSS immediately for visual feedback
+    const root = document.documentElement
+    root.style.setProperty('--app-opacity', (opacity / 100).toString())
+
+    // Debounce the actual config update
+    debouncedUpdateConfig(opacity)
   }
 
   const handleOpacityInputChange = (value: string) => {
@@ -35,7 +76,16 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
     if (isNaN(numValue)) return
 
     const opacity = Math.round(Math.max(10, Math.min(100, numValue)))
-    updateConfig({ opacity })
+
+    // Update local state immediately
+    setLocalOpacity(opacity)
+
+    // Apply opacity to CSS immediately
+    const root = document.documentElement
+    root.style.setProperty('--app-opacity', (opacity / 100).toString())
+
+    // Update config immediately for input changes (less frequent)
+    updateOpacity(opacity)
   }
 
   const handleThemeToggle = () => {
@@ -136,7 +186,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
             <Badge
               variant="secondary"
               className={cn(
-                'text-xs border-0',
+                'text-xs border-0 p-2',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 text-white/70'
                   : 'bg-white/30 text-zinc-600'
@@ -155,11 +205,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
-            Panel Opacity ({config.opacity}%)
+            Panel Opacity ({localOpacity}%)
           </h3>
           <div className="flex items-center gap-3">
             <Slider
-              value={[config.opacity]}
+              value={[localOpacity]}
               onValueChange={handleOpacityChange}
               min={10}
               max={100}
@@ -179,7 +229,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               min={10}
               max={100}
               step={1}
-              value={config.opacity}
+              value={localOpacity}
               onChange={(e) => handleOpacityInputChange(e.target.value)}
               className={cn(
                 'w-16 border-zinc-500/10',

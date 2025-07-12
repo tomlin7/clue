@@ -22,6 +22,7 @@ export interface AppConfig {
 interface ConfigContextType {
   config: AppConfig
   updateConfig: (updates: Partial<AppConfig>) => Promise<void>
+  updateOpacity: (opacity: number) => Promise<void>
   addMode: (mode: Omit<AIMode, 'id'> & { id?: string }) => Promise<string>
   updateMode: (id: string, updates: Partial<Omit<AIMode, 'id'>>) => Promise<void>
   deleteMode: (id: string) => Promise<void>
@@ -245,6 +246,19 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     }
   }
 
+  const updateOpacity = async (opacity: number) => {
+    if (!config) return
+
+    try {
+      await window.electronAPI.config.update({ opacity })
+      const updatedConfig = { ...config, opacity }
+      setConfig(updatedConfig)
+      // Note: CSS is already updated by the caller for immediate feedback
+    } catch (error) {
+      console.error('Failed to update opacity:', error)
+    }
+  }
+
   if (isLoading || !config) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -258,6 +272,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
       value={{
         config,
         updateConfig,
+        updateOpacity,
         addMode,
         updateMode,
         deleteMode,

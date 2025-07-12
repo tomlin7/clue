@@ -178,6 +178,7 @@ class ConfigManager {
   private configPath: string
   private config: AppConfig
   private watchers: ((config: AppConfig) => void)[] = []
+  private saveTimeout: NodeJS.Timeout | null = null
 
   constructor() {
     const userDataPath = app.getPath('userData')
@@ -208,6 +209,22 @@ class ConfigManager {
   }
 
   private saveConfig(): void {
+    this.debouncedSave()
+  }
+
+  private debouncedSave(): void {
+    // Clear existing timeout
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout)
+    }
+
+    // Set new timeout for debounced save
+    this.saveTimeout = setTimeout(() => {
+      this.actualSave()
+    }, 200) // 200ms debounce for file writes
+  }
+
+  private actualSave(): void {
     try {
       // Separate default and custom modes for storage
       const defaultModeIds = defaultModes.map((m) => m.id)
@@ -226,6 +243,15 @@ class ConfigManager {
     } catch (error) {
       console.error('Failed to save config:', error)
     }
+  }
+
+  // Flush any pending saves immediately (useful for app shutdown)
+  flushSave(): void {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout)
+      this.saveTimeout = null
+    }
+    this.actualSave()
   }
 
   getConfig(): AppConfig {
