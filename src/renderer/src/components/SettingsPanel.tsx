@@ -5,7 +5,7 @@ import { useSettings } from '@/contexts/SettingsContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
 import { Moon, Palette, RotateCcw, Sun, X } from 'lucide-react'
-import React, { useState } from 'react'
+import React from 'react'
 
 interface SettingsPanelProps {
   isOpen: boolean
@@ -16,17 +16,12 @@ interface SettingsPanelProps {
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, className }) => {
   const { settings, updateSettings, resetSettings } = useSettings()
   const { theme, setTheme, effectiveTheme } = useTheme()
-  const [tempPrompt, setTempPrompt] = useState(settings.defaultPrompt)
 
   if (!isOpen) return null
 
   const handleOpacityChange = (value: string) => {
     const opacity = Math.max(10, Math.min(100, parseInt(value) || 80))
     updateSettings({ opacity })
-  }
-
-  const handlePromptSave = () => {
-    updateSettings({ defaultPrompt: tempPrompt })
   }
 
   const handleThemeToggle = () => {
@@ -98,7 +93,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 max-h-[500px] overflow-y-auto">
         {/* Theme Settings */}
         <div className="space-y-3">
           <h3
@@ -182,29 +177,56 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
-            Default AI Prompt
+            AI Prompt Template
           </h3>
           <div className="space-y-2">
-            <textarea
-              value={tempPrompt}
-              onChange={(e) => setTempPrompt(e.target.value)}
-              placeholder="Enter your default prompt for AI analysis..."
-              rows={3}
+            <select
+              value={settings.defaultPrompt}
+              onChange={(e) => updateSettings({ defaultPrompt: e.target.value })}
               className={cn(
-                'w-full p-2 rounded border border-zinc-500/10 resize-none text-sm',
-                effectiveTheme === 'dark'
-                  ? 'bg-white/10 text-white placeholder:text-white/50'
-                  : 'bg-white/20 text-zinc-800 placeholder:text-zinc-500'
+                'w-full p-2 rounded border border-zinc-500/10 text-sm',
+                effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
               )}
-            />
-            <Button
-              size="sm"
-              onClick={handlePromptSave}
-              disabled={tempPrompt === settings.defaultPrompt}
-              className={cn('bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white')}
             >
-              Save Prompt
-            </Button>
+              <option value="Analyze what you see on the screen in detail.">
+                🔍 General Analysis
+              </option>
+              <option value="Describe the user interface elements and their layout on the screen.">
+                🖼️ UI Description
+              </option>
+              <option value="Identify any errors, bugs, or issues visible on the screen.">
+                🐛 Bug Detection
+              </option>
+              <option value="Explain the code visible on the screen and suggest improvements.">
+                💻 Code Review
+              </option>
+              <option value="Summarize the content and key information shown on the screen.">
+                📋 Content Summary
+              </option>
+              <option value="Provide accessibility insights and recommendations for what's shown.">
+                ♿ Accessibility Review
+              </option>
+              <option value="Analyze the design, colors, typography, and visual hierarchy on the screen.">
+                🎨 Design Analysis
+              </option>
+              <option value="Identify any security concerns or vulnerabilities visible on the screen.">
+                🔒 Security Review
+              </option>
+              <option value="Suggest optimizations and performance improvements based on what's visible.">
+                ⚡ Performance Review
+              </option>
+              <option value="Help me understand and learn from what's shown on the screen.">
+                🎓 Educational Guide
+              </option>
+            </select>
+            <div
+              className={cn(
+                'p-2 rounded border border-zinc-500/10 text-xs',
+                effectiveTheme === 'dark' ? 'bg-white/5 text-white/70' : 'bg-white/30 text-zinc-600'
+              )}
+            >
+              <strong>Current:</strong> {settings.defaultPrompt}
+            </div>
           </div>
         </div>
 
