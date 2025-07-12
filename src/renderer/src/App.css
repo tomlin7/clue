@@ -1,4 +1,4 @@
-/* Global styles for transparent overlay */
+/* Global styles for transparent overlay app */
 * {
   user-select: none;
   -webkit-user-select: none;
@@ -21,7 +21,7 @@ html {
   overflow: hidden;
 }
 
-/* Disable text selection and improve transparency */
+/* Disable scrollbars */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -31,30 +31,7 @@ html {
   scrollbar-width: none;
 }
 
-/* Enhanced Glassmorphism effects for overlay */
-.glass {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background: rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.glass-strong {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.glass-ultra {
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  background: rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-/* Smooth animations */
+/* Smooth entrance animation */
 .animate-in {
   animation: slideIn 0.3s ease-out;
 }
@@ -70,21 +47,22 @@ html {
   }
 }
 
-/* Custom scrollbar for webkit browsers */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+/* Panel transition helper */
+.panel-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+/* Recording pulse animation */
+.recording-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }

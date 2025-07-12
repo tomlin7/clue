@@ -46,12 +46,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <div
-      className={cn(
-        'acrylic-panel acrylic-panel-glow acrylic-panel-shimmer acrylic-panel-enhanced-shadow',
-        'rounded-lg p-4 transition-all duration-300',
-        'relative z-10',
-        className
-      )}
+      className={cn('acrylic-panel', 'rounded-lg p-4 panel-transition', 'relative z-10', className)}
       onMouseEnter={() => window.electronAPI.setClickThrough(false)}
       onMouseLeave={() => window.electronAPI.setClickThrough(true)}
     >
@@ -94,9 +89,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             variant="secondary"
             className={cn(
               'text-xs border-0 py-1',
-              effectiveTheme === 'dark'
-                ? 'bg-white/15 text-white/90'
-                : 'bg-gray-200/70 text-gray-800'
+              effectiveTheme === 'dark' ? 'bg-white/15 text-white/90' : 'bg-white/40 text-zinc-700'
             )}
           >
             Ask AI
@@ -104,9 +97,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <kbd
             className={cn(
               'px-2 py-1 rounded text-xs',
-              effectiveTheme === 'dark'
-                ? 'bg-white/15 text-white/80'
-                : 'bg-gray-200/70 text-gray-700'
+              effectiveTheme === 'dark' ? 'bg-white/15 text-white/80' : 'bg-white/40 text-zinc-700'
             )}
           >
             Ctrl
@@ -114,9 +105,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <kbd
             className={cn(
               'px-2 py-1 rounded text-xs',
-              effectiveTheme === 'dark'
-                ? 'bg-white/15 text-white/80'
-                : 'bg-gray-200/70 text-gray-700'
+              effectiveTheme === 'dark' ? 'bg-white/15 text-white/80' : 'bg-white/40 text-zinc-700'
             )}
           >
             ↵
@@ -128,9 +117,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             variant="outline"
             className={cn(
               'text-xs border-0 py-1',
-              effectiveTheme === 'dark'
-                ? 'bg-white/10 text-white/70'
-                : 'bg-gray-100/80 text-gray-600'
+              effectiveTheme === 'dark' ? 'bg-white/10 text-white/70' : 'bg-white/30 text-zinc-600'
             )}
           >
             Show/Hide
@@ -138,9 +125,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <kbd
             className={cn(
               'px-2 py-1 rounded text-xs',
-              effectiveTheme === 'dark'
-                ? 'bg-white/15 text-white/80'
-                : 'bg-gray-200/70 text-gray-700'
+              effectiveTheme === 'dark' ? 'bg-white/15 text-white/80' : 'bg-white/40 text-zinc-700'
             )}
           >
             Ctrl
@@ -148,9 +133,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <kbd
             className={cn(
               'px-2 py-1 rounded text-xs',
-              effectiveTheme === 'dark'
-                ? 'bg-white/15 text-white/80'
-                : 'bg-gray-200/70 text-gray-700'
+              effectiveTheme === 'dark' ? 'bg-white/15 text-white/80' : 'bg-white/40 text-zinc-700'
             )}
           >
             \
@@ -165,7 +148,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             'h-8 w-8 relative z-20',
             effectiveTheme === 'dark'
               ? 'text-white/70 hover:text-white hover:bg-white/10'
-              : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200/50'
+              : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
           )}
         >
           <Settings size={16} />

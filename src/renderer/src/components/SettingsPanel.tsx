@@ -61,8 +61,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
   return (
     <div
       className={cn(
-        'acrylic-panel acrylic-panel-glow acrylic-panel-shimmer acrylic-panel-enhanced-shadow',
-        'rounded-lg transition-all duration-300',
+        'acrylic-panel',
+        'rounded-lg transition-all duration-200',
         'min-w-[400px] max-w-[500px]',
         className
       )}
@@ -80,7 +80,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <Badge
             variant="secondary"
             className={cn(
-              effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-700'
+              effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/30 text-zinc-700'
             )}
           >
             Settings
@@ -95,7 +95,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
             'h-8 w-8',
             effectiveTheme === 'dark'
               ? 'text-white/70 hover:text-white hover:bg-white/10'
-              : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+              : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
           )}
         >
           <X size={14} />
@@ -109,7 +109,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
             Theme
@@ -123,7 +123,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 'flex items-center gap-2',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 text-white hover:bg-white/20'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-white/30 text-zinc-700 hover:bg-gray-200'
               )}
             >
               {getThemeIcon()}
@@ -135,7 +135,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 'text-xs border-0',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 text-white/70'
-                  : 'bg-gray-100 text-gray-600'
+                  : 'bg-white/30 text-zinc-600'
               )}
             >
               Ctrl+T
@@ -148,7 +148,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
             Panel Opacity ({settings.opacity}%)
@@ -164,7 +164,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 'flex-1',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-gray-50 border-gray-300 text-gray-800'
+                  : 'bg-white/20 border-white/30 text-zinc-800'
               )}
             />
             <Input
@@ -177,7 +177,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 'w-16',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-gray-50 border-gray-300 text-gray-800'
+                  : 'bg-white/20 border-white/30 text-zinc-800'
               )}
             />
           </div>
@@ -188,7 +188,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
             Default AI Prompt
@@ -203,7 +203,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 'w-full p-2 rounded border resize-none text-sm',
                 effectiveTheme === 'dark'
                   ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50'
-                  : 'bg-gray-50 border-gray-300 text-gray-800 placeholder:text-gray-500'
+                  : 'bg-white/20 border-white/30 text-zinc-800 placeholder:text-zinc-500'
               )}
             />
             <Button
@@ -222,7 +222,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
             AI Model
@@ -234,7 +234,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               'w-full p-2 rounded border text-sm',
               effectiveTheme === 'dark'
                 ? 'bg-white/10 border-white/20 text-white'
-                : 'bg-gray-50 border-gray-300 text-gray-800'
+                : 'bg-white/20 border-white/30 text-zinc-800'
             )}
           >
             <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
@@ -248,7 +248,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <h3
             className={cn(
               'text-sm font-medium',
-              effectiveTheme === 'dark' ? 'text-white' : 'text-gray-800'
+              effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
             Keyboard Shortcuts
@@ -264,7 +264,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                   'text-xs border-0',
                   effectiveTheme === 'dark'
                     ? 'bg-white/10 text-white/70'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-white/30 text-zinc-600'
                 )}
               >
                 Ctrl+\
@@ -280,7 +280,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                   'text-xs border-0',
                   effectiveTheme === 'dark'
                     ? 'bg-white/10 text-white/70'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-white/30 text-zinc-600'
                 )}
               >
                 Ctrl+Enter
@@ -296,7 +296,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                   'text-xs border-0',
                   effectiveTheme === 'dark'
                     ? 'bg-white/10 text-white/70'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-white/30 text-zinc-600'
                 )}
               >
                 Ctrl+M
@@ -312,7 +312,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                   'text-xs border-0',
                   effectiveTheme === 'dark'
                     ? 'bg-white/10 text-white/70'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-white/30 text-zinc-600'
                 )}
               >
                 Ctrl+T
@@ -328,7 +328,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                   'text-xs border-0',
                   effectiveTheme === 'dark'
                     ? 'bg-white/10 text-white/70'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-white/30 text-zinc-600'
                 )}
               >
                 Ctrl+Q

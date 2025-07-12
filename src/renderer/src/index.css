@@ -1,20 +1,21 @@
 @import 'tailwindcss';
 
+/* CSS Variables for consistent theming */
 :root {
   --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+  --foreground: 240 3.8% 46.1%; /* Dark zinc text */
   --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  --card-foreground: 240 3.8% 46.1%; /* Dark zinc text */
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
+  --popover-foreground: 240 3.8% 46.1%; /* Dark zinc text */
   --primary: 221.2 83.2% 53.3%;
   --primary-foreground: 210 40% 98%;
   --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
+  --secondary-foreground: 240 3.8% 46.1%; /* Dark zinc text */
   --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --muted-foreground: 240 5.9% 64.1%; /* Zinc muted text */
   --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
+  --accent-foreground: 240 3.8% 46.1%; /* Dark zinc text */
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
   --border: 214.3 31.8% 91.4%;
@@ -49,6 +50,7 @@
   border-color: hsl(var(--border));
 }
 
+/* Base styles */
 body {
   background-color: transparent;
   color: hsl(var(--foreground));
@@ -73,197 +75,126 @@ html {
   overflow: hidden;
 }
 
-/* Custom styles for the overlay */
-.glass-panel {
-  backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
+/* CLEAN MINIMAL FROSTED GLASS ACRYLIC EFFECT */
 
-.dark .glass-panel {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Enhanced Acrylic Blur Effects for Panels */
+/* Base frosted glass panel */
 .acrylic-panel {
+  /* True frosted glass effect */
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  
   position: relative;
-  overflow: hidden;
+  border-radius: 12px;
+  
+  /* Only essential transitions */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dark .acrylic-panel {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.15),
-    0 2px 8px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+/* Light mode - Clean white frosted glass */
+:root .acrylic-panel {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  color: hsl(240 3.8% 46.1%);
 }
 
-/* Acrylic panel glow effect */
-.acrylic-panel-glow::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  pointer-events: none;
-  z-index: 1;
-  border-radius: inherit;
+/* Dark mode - Clean dark frosted glass */
+:root.dark .acrylic-panel {
+  background: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  color: hsl(210 40% 98%) !important;
 }
 
-.dark .acrylic-panel-glow::before {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.03) 50%,
-    rgba(255, 255, 255, 0.01) 100%
-  );
+/* Subtle hover effect only */
+.acrylic-panel:hover {
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  transform: translateY(-1px);
 }
 
-/* Subtle shimmer effect */
-.acrylic-panel-shimmer::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.03) 50%,
-    transparent 70%
-  );
-  transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  animation: shimmer 8s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 2;
+:root .acrylic-panel:hover {
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 6px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-.dark .acrylic-panel-shimmer::after {
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.02) 50%,
-    transparent 70%
-  );
+:root.dark .acrylic-panel:hover {
+  background: rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
-@keyframes shimmer {
-  0%,
-  100% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-    opacity: 0;
-  }
-  50% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-    opacity: 1;
-  }
-}
-
-/* Enhanced shadow for better depth */
+/* Remove all extra effects - no glow, no shimmer, no enhanced shadows */
+.acrylic-panel-glow::before,
+.acrylic-panel-shimmer::after,
 .acrylic-panel-enhanced-shadow {
-  box-shadow:
-    0 6px 24px rgba(0, 0, 0, 0.06),
-    0 3px 12px rgba(0, 0, 0, 0.04),
-    0 1px 4px rgba(0, 0, 0, 0.02),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  display: none !important;
 }
 
-.dark .acrylic-panel-enhanced-shadow {
-  box-shadow:
-    0 6px 24px rgba(0, 0, 0, 0.2),
-    0 3px 12px rgba(0, 0, 0, 0.15),
-    0 1px 4px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
-}
-
-.panel-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.recording-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
+/* Utility classes */
 .bottom-border {
-  /*use tailwindcss*/
-  @apply border-b border-gray-200 dark:border-zinc-700/50;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Ensure overlay text is visible */
-.overlay-text {
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+.dark .bottom-border {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.dark .overlay-text {
-  color: white;
-}
-
-/* Custom scrollbar styles to match dark theme */
+/* Frosted glass compatible scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.3);
 }
 
-::-webkit-scrollbar-thumb:active {
-  background: rgba(255, 255, 255, 0.35);
+/* Dark mode scrollbars */
+.dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
 }
 
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-/* For Firefox */
+/* Firefox scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.02);
+  scrollbar-color: rgba(0, 0, 0, 0.2) rgba(255, 255, 255, 0.1);
+}
+
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05) !important;
 }
