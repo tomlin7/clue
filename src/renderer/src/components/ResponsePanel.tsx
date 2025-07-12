@@ -28,7 +28,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   isHistoryVisible,
   className
 }) => {
-  const [isMinimized, setIsMinimized] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(true)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [contentHeight, setContentHeight] = useState(0)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -106,8 +106,8 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
           <Badge
             variant="secondary"
             className={cn(
-              'border-0',
-              effectiveTheme === 'dark' ? 'bg-white/15 text-white/90' : 'bg-white/40 text-zinc-700'
+              'border-0 text-sm',
+              effectiveTheme === 'dark' ? ' text-white/90' : ' text-zinc-700'
             )}
           >
             AI Response
@@ -380,14 +380,14 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
               </ReactMarkdown>
             </div>
           ) : (
-            <div className="text-center py-4">
+            <div className="text-center py-4 text-sm">
               <p className={cn(effectiveTheme === 'dark' ? 'text-white/50' : 'text-zinc-500')}>
                 <Badge
                   className={cn(
-                    'px-2 py-1 rounded',
+                    'px-2 py-1 rounded font-normal',
                     effectiveTheme === 'dark'
                       ? 'bg-white/10 text-white/80'
-                      : 'bg-white/40 text-zinc-700'
+                      : 'bg-zinc-500/10 text-zinc-500'
                   )}
                 >
                   Ctrl+Enter

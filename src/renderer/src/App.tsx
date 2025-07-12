@@ -191,8 +191,8 @@ function App() {
     toast.success('Conversation deleted')
   }
 
-  const handleOpenSettings = () => {
-    setIsSettingsOpen(true)
+  const handleToggleSettings = () => {
+    setIsSettingsOpen(!isSettingsOpen)
   }
 
   const handleCloseSettings = () => {
@@ -216,7 +216,8 @@ function App() {
         onToggleRecording={handleToggleRecording}
         transcription={transcription}
         isVisible={isVisible}
-        onOpenSettings={handleOpenSettings}
+        onOpenSettings={handleToggleSettings}
+        isSettingsOpen={isSettingsOpen}
         conversationSessions={conversationSessions}
         currentSessionId={currentSessionId}
       />

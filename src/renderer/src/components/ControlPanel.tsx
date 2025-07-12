@@ -11,6 +11,7 @@ interface ControlPanelProps {
   onToggleRecording: () => void
   transcription: string
   onOpenSettings: () => void
+  isSettingsOpen?: boolean
   className?: string
 }
 
@@ -21,6 +22,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onToggleRecording,
   transcription,
   onOpenSettings,
+  isSettingsOpen = false,
   className
 }) => {
   const [recordingTime, setRecordingTime] = useState(0)
@@ -158,13 +160,25 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             size="icon"
             onClick={onOpenSettings}
             className={cn(
-              'h-8 w-8 relative z-20 rounded-full border zinc-border',
-              effectiveTheme === 'dark'
-                ? 'text-white/70 hover:text-white hover:bg-white/10'
-                : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
+              'h-8 w-8 relative z-20 rounded-full border zinc-border transition-all duration-300 ease-in-out group',
+              'hover:scale-105',
+              isSettingsOpen
+                ? effectiveTheme === 'dark'
+                  ? 'text-zinc-400 bg-zinc-500/20 border-zinc-400/40'
+                  : 'text-zinc-600 bg-zinc-100/60 border-zinc-300/50'
+                : effectiveTheme === 'dark'
+                  ? 'text-white/70 hover:text-white hover:bg-white/10'
+                  : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
             )}
           >
-            <Settings size={16} />
+            <Settings
+              size={16}
+              className={cn(
+                'transition-transform duration-500 ease-in-out',
+                'group-hover:rotate-90',
+                isSettingsOpen && 'rotate-250'
+              )}
+            />
           </Button>
         </div>
       </div>

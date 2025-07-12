@@ -18,8 +18,8 @@
   --accent-foreground: 240 3.8% 46.1%; /* Dark zinc text */
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
+  --border: 240 5% 46%;
+  --input: 240 5% 46%;
   --ring: 221.2 83.2% 53.3%;
   --radius: 0.5rem;
 }
@@ -41,13 +41,13 @@
   --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
+  --border: 240 5% 46%;
+  --input: 240 5% 46%;
   --ring: 224.3 76.3% 94.1%;
 }
 
 * {
-  border-color: hsl(var(--border));
+  border-color: hsla(240, 5%, 46%, 0.2);
 }
 
 /* Base styles */
@@ -148,7 +148,7 @@ html {
 }
 
 .zinc-border {
-  @apply border-zinc-500/20;
+  border-color: hsla(240, 5%, 46%, 0.1);
 }
 
 .dark .bottom-border {

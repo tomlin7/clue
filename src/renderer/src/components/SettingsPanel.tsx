@@ -70,12 +70,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
       onMouseLeave={() => window.electronAPI.setClickThrough(true)}
     >
       {/* Header */}
-      <div
-        className={cn(
-          'flex items-center justify-between p-4 border-b',
-          effectiveTheme === 'dark' ? 'border-white/10' : 'border-black/10'
-        )}
-      >
+      <div className={cn('flex items-center justify-between p-4 border-b border-zinc-500/10')}>
         <div className="flex items-center gap-2">
           <Badge
             variant="secondary"
@@ -161,10 +156,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               value={settings.opacity}
               onChange={(e) => handleOpacityChange(e.target.value)}
               className={cn(
-                'flex-1',
-                effectiveTheme === 'dark'
-                  ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-white/20 border-white/30 text-zinc-800'
+                'flex-1 border-zinc-500/10',
+                effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
               )}
             />
             <Input
@@ -174,10 +167,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               value={settings.opacity}
               onChange={(e) => handleOpacityChange(e.target.value)}
               className={cn(
-                'w-16',
-                effectiveTheme === 'dark'
-                  ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-white/20 border-white/30 text-zinc-800'
+                'w-16 border-zinc-500/10',
+                effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
               )}
             />
           </div>
@@ -200,10 +191,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               placeholder="Enter your default prompt for AI analysis..."
               rows={3}
               className={cn(
-                'w-full p-2 rounded border resize-none text-sm',
+                'w-full p-2 rounded border border-zinc-500/10 resize-none text-sm',
                 effectiveTheme === 'dark'
-                  ? 'bg-white/10 border-white/20 text-white placeholder:text-white/50'
-                  : 'bg-white/20 border-white/30 text-zinc-800 placeholder:text-zinc-500'
+                  ? 'bg-white/10 text-white placeholder:text-white/50'
+                  : 'bg-white/20 text-zinc-800 placeholder:text-zinc-500'
               )}
             />
             <Button
@@ -231,10 +222,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
             value={settings.aiModel}
             onChange={(e) => updateSettings({ aiModel: e.target.value })}
             className={cn(
-              'w-full p-2 rounded border text-sm',
-              effectiveTheme === 'dark'
-                ? 'bg-white/10 border-white/20 text-white'
-                : 'bg-white/20 border-white/30 text-zinc-800'
+              'w-full p-2 rounded border border-zinc-500/10 text-sm',
+              effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
             )}
           >
             <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
@@ -338,7 +327,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
         </div>
 
         {/* Reset Settings */}
-        <div className="pt-4 border-t border-white/10">
+        <div className="pt-4 border-t border-zinc-500/10">
           <Button
             variant="ghost"
             size="sm"
