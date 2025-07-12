@@ -62,6 +62,12 @@ function createWindow(): void {
 
   // Set window to be click-through initially when not visible
   mainWindow.setIgnoreMouseEvents(true, { forward: true })
+  // // Set initial window interaction based on visibility state
+  // if (isVisible) {
+  //   mainWindow.setIgnoreMouseEvents(false) // Allow interaction when visible
+  // } else {
+  //   mainWindow.setIgnoreMouseEvents(true, { forward: true }) // Click-through when hidden
+  // }
 
   const startUrl = isDev
     ? 'http://localhost:5173'
@@ -100,6 +106,13 @@ function registerGlobalShortcuts(): void {
   globalShortcut.register('CommandOrControl+\\', () => {
     isVisible = !isVisible
     if (mainWindow) {
+      if (isVisible) {
+        // When showing panels, disable click-through so user can interact
+        mainWindow.setIgnoreMouseEvents(false)
+      } else {
+        // When hiding panels, enable click-through so clicks pass through
+        mainWindow.setIgnoreMouseEvents(true, { forward: true })
+      }
       mainWindow.webContents.send('toggle-visibility', isVisible)
     }
   })
