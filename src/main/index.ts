@@ -8,6 +8,7 @@ import {
   screen
 } from 'electron'
 import * as path from 'path'
+import { AIMode, AppConfig, configManager } from './config'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -177,6 +178,81 @@ ipcMain.handle('set-click-through', (_event: IpcMainInvokeEvent, enabled: boolea
 ipcMain.handle('get-screen-size', (): ScreenSize => {
   const { width, height } = screen.getPrimaryDisplay().bounds // Use bounds for true fullscreen
   return { width, height }
+})
+
+// Config IPC handlers
+ipcMain.handle('config:get', (): AppConfig => {
+  return configManager.getConfig()
+})
+
+ipcMain.handle('config:update', (_event: IpcMainInvokeEvent, updates: Partial<AppConfig>): void => {
+  configManager.updateConfig(updates)
+})
+
+ipcMain.handle(
+  'config:add-mode',
+  (_event: IpcMainInvokeEvent, mode: Omit<AIMode, 'id'> & { id?: string }): string => {
+    return configManager.addMode(mode)
+  }
+)
+
+ipcMain.handle(
+  'config:update-mode',
+  (_event: IpcMainInvokeEvent, id: string, updates: Partial<Omit<AIMode, 'id'>>): void => {
+    configManager.updateMode(id, updates)
+  }
+)
+
+ipcMain.handle('config:delete-mode', (_event: IpcMainInvokeEvent, id: string): void => {
+  configManager.deleteMode(id)
+})
+
+ipcMain.handle('config:select-mode', (_event: IpcMainInvokeEvent, id: string): void => {
+  configManager.selectMode(id)
+})
+
+ipcMain.handle('config:get-selected-mode', (): AIMode | undefined => {
+  return configManager.getSelectedMode()
+})
+
+ipcMain.handle('config:reset', (): void => {
+  configManager.resetToDefaults()
+})
+
+ipcMain.handle('config:export', (): string => {
+  return configManager.exportConfig()
+})
+
+ipcMain.handle('config:import', (_event: IpcMainInvokeEvent, configJson: string): boolean => {
+  return configManager.importConfig(configJson)
+})
+
+ipcMain.handle('config:set-api-key', (_event: IpcMainInvokeEvent, apiKey: string): void => {
+  configManager.setApiKey(apiKey)
+})
+
+ipcMain.handle('config:get-api-key', (): string => {
+  return configManager.getApiKey()
+})
+
+ipcMain.handle('config:has-valid-api-key', (): boolean => {
+  return configManager.hasValidApiKey()
+})
+
+ipcMain.handle('config:clear-api-key', (): void => {
+  configManager.clearApiKey()
+})
+
+ipcMain.handle('config:get-config-path', (): string => {
+  return configManager.getConfigPath()
+})
+
+ipcMain.handle('config:open-config-file', (): void => {
+  configManager.openConfigFile()
+})
+
+ipcMain.handle('config:open-config-folder', (): void => {
+  configManager.openConfigFolder()
 })
 
 app.whenReady().then(() => {

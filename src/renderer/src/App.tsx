@@ -1,6 +1,7 @@
 import { PanelGroup } from '@/components/PanelGroup'
 import { SettingsPanel } from '@/components/SettingsPanel'
 import { Toaster } from '@/components/ui/sonner'
+import { useConfig } from '@/contexts/ConfigContext'
 import { AIService } from '@/services/aiService'
 import { AudioService } from '@/services/audioService'
 import { ConversationSummary } from '@/types/conversation'
@@ -8,10 +9,9 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import './App.css'
 
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || 'your-google-api-key-here'
-
 function App() {
-  const [aiService] = useState(() => new AIService(GOOGLE_API_KEY))
+  const { config } = useConfig()
+  const [aiService, setAiService] = useState<AIService | null>(null)
   const [audioService] = useState(() => new AudioService())
   const [response, setResponse] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -22,9 +22,31 @@ function App() {
   const [conversationSessions, setConversationSessions] = useState<ConversationSummary[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>()
 
+  // Initialize AI service when API key is available
+  useEffect(() => {
+    console.log('Config updated:', config)
+    console.log('API Key from config:', config.apiKey)
+    console.log('API Key length:', config.apiKey?.length)
+
+    if (config.apiKey && config.apiKey.length > 0) {
+      console.log('Creating new AI service with API key')
+      const newAiService = new AIService(config.apiKey)
+      setAiService(newAiService)
+    } else {
+      console.log('No valid API key, setting aiService to null')
+      setAiService(null)
+    }
+  }, [config])
+
   // Update conversation sessions when aiService changes
   useEffect(() => {
     const updateSessions = () => {
+      if (!aiService) {
+        setConversationSessions([])
+        setCurrentSessionId(undefined)
+        return
+      }
+
       const sessions = aiService.getSessionSummaries()
       const currentSession = aiService.getCurrentSession()
       setConversationSessions(sessions)
@@ -71,7 +93,7 @@ function App() {
       window.electronAPI.removeAllListeners('toggle-microphone')
       window.electronAPI.removeAllListeners('screenshot-captured')
     }
-  }, [isRecording])
+  }, [isRecording, aiService])
 
   const handleToggleRecording = async () => {
     try {
@@ -95,7 +117,57 @@ function App() {
   }
 
   const handleScreenshotAnalysis = async (imageData: string) => {
-    if (!imageData) return
+    console.log('Screenshot analysis called')
+    console.log('Image data available:', !!imageData)
+    console.log('AI Service available:', !!aiService)
+    console.log('Current config API key:', config.apiKey)
+    console.log('Current config:', config)
+
+    // Check if we have a valid API key in config even if aiService is not ready
+    if (!imageData) {
+      console.log('No image data provided')
+      return
+    }
+
+    if (!config.apiKey || config.apiKey.length === 0) {
+      console.log('No API key in config')
+      toast.error('Please set up your Google API key in settings first')
+      return
+    }
+
+    if (!aiService) {
+      console.log('AI Service not initialized, creating new one with current API key')
+      const tempAiService = new AIService(config.apiKey)
+      setAiService(tempAiService)
+
+      // Use the temp service for this analysis
+      setIsLoading(true)
+      try {
+        const currentTranscription = audioService.getCurrentTranscription()
+        const analysis = await tempAiService.analyzeScreenshot(imageData, currentTranscription)
+        setResponse(analysis)
+
+        // Update conversation sessions
+        const sessions = tempAiService.getSessionSummaries()
+        const currentSession = tempAiService.getCurrentSession()
+        setConversationSessions(sessions)
+        setCurrentSessionId(currentSession?.id)
+
+        // Clear transcription after use
+        if (currentTranscription) {
+          setTranscription('')
+          audioService.clearTranscription()
+        }
+
+        toast.success('Screenshot analyzed')
+      } catch (error) {
+        console.error('Error analyzing screenshot:', error)
+        toast.error('Failed to analyze screenshot')
+      } finally {
+        setIsLoading(false)
+      }
+      return
+    }
 
     setIsLoading(true)
     try {
@@ -125,7 +197,12 @@ function App() {
   }
 
   const handleAskQuestion = async (question: string) => {
-    if (!question.trim()) return
+    if (!question.trim() || !aiService) {
+      if (!aiService) {
+        toast.error('Please set up your Google API key in settings first')
+      }
+      return
+    }
 
     setIsLoading(true)
     try {
@@ -149,18 +226,22 @@ function App() {
 
   const handleClearResponse = () => {
     setResponse('')
-    aiService.clearHistory()
+    if (aiService) {
+      aiService.clearHistory()
 
-    // Update conversation sessions
-    const sessions = aiService.getSessionSummaries()
-    const currentSession = aiService.getCurrentSession()
-    setConversationSessions(sessions)
-    setCurrentSessionId(currentSession?.id)
+      // Update conversation sessions
+      const sessions = aiService.getSessionSummaries()
+      const currentSession = aiService.getCurrentSession()
+      setConversationSessions(sessions)
+      setCurrentSessionId(currentSession?.id)
+    }
 
     toast.success('Response cleared')
   }
 
   const handleNewSession = () => {
+    if (!aiService) return
+
     const newSession = aiService.createNewSession()
     setResponse('')
 
@@ -173,6 +254,8 @@ function App() {
   }
 
   const handleSelectSession = (sessionId: string) => {
+    if (!aiService) return
+
     aiService.loadSession(sessionId)
     setResponse('')
     setCurrentSessionId(sessionId)
@@ -180,6 +263,8 @@ function App() {
   }
 
   const handleDeleteSession = (sessionId: string) => {
+    if (!aiService) return
+
     aiService.deleteSession(sessionId)
 
     // Update conversation sessions

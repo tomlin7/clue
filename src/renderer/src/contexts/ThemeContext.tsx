@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { useConfig } from './ConfigContext'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -19,40 +20,35 @@ export const useTheme = () => {
 }
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('system')
+  const { config, updateConfig } = useConfig()
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('dark')
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme
-    if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
-      setTheme(savedTheme)
-    }
-  }, [])
+  const setTheme = (theme: Theme) => {
+    updateConfig({ theme })
+  }
 
   useEffect(() => {
-    localStorage.setItem('theme', theme)
-
     const updateEffectiveTheme = () => {
-      if (theme === 'system') {
+      if (config.theme === 'system') {
         const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
           ? 'dark'
           : 'light'
         setEffectiveTheme(systemTheme)
       } else {
-        setEffectiveTheme(theme)
+        setEffectiveTheme(config.theme)
       }
     }
 
     updateEffectiveTheme()
 
-    if (theme === 'system') {
+    if (config.theme === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
       mediaQuery.addEventListener('change', updateEffectiveTheme)
       return () => mediaQuery.removeEventListener('change', updateEffectiveTheme)
     }
 
     return undefined
-  }, [theme])
+  }, [config.theme])
 
   useEffect(() => {
     const root = document.documentElement
@@ -64,7 +60,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [effectiveTheme])
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, effectiveTheme }}>
+    <ThemeContext.Provider value={{ theme: config.theme, setTheme, effectiveTheme }}>
       {children}
     </ThemeContext.Provider>
   )

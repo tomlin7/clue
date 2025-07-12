@@ -2,11 +2,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Slider } from '@/components/ui/slider'
-import { useSettings } from '@/contexts/SettingsContext'
+import { useConfig } from '@/contexts/ConfigContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
-import { Moon, Palette, RotateCcw, Sun, X } from 'lucide-react'
-import React from 'react'
+import { ExternalLink, FileText, Moon, Palette, RotateCcw, Sun, X } from 'lucide-react'
+import React, { useState } from 'react'
 
 interface SettingsPanelProps {
   isOpen: boolean
@@ -15,14 +15,19 @@ interface SettingsPanelProps {
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, className }) => {
-  const { settings, updateSettings, resetSettings } = useSettings()
+  const { config, updateConfig, selectMode, getSelectedMode, resetConfig, addMode, deleteMode } =
+    useConfig()
   const { theme, setTheme, effectiveTheme } = useTheme()
+  const [showAddMode, setShowAddMode] = useState(false)
+  const [newMode, setNewMode] = useState({ name: '', icon: '', prompt: '', category: '' })
 
   if (!isOpen) return null
 
+  const selectedMode = getSelectedMode()
+
   const handleOpacityChange = (values: number[]) => {
     const opacity = Math.round(Math.max(10, Math.min(100, values[0])))
-    updateSettings({ opacity })
+    updateConfig({ opacity })
   }
 
   const handleOpacityInputChange = (value: string) => {
@@ -30,7 +35,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
     if (isNaN(numValue)) return
 
     const opacity = Math.round(Math.max(10, Math.min(100, numValue)))
-    updateSettings({ opacity })
+    updateConfig({ opacity })
   }
 
   const handleThemeToggle = () => {
@@ -150,11 +155,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
-            Panel Opacity ({settings.opacity}%)
+            Panel Opacity ({config.opacity}%)
           </h3>
           <div className="flex items-center gap-3">
             <Slider
-              value={[settings.opacity]}
+              value={[config.opacity]}
               onValueChange={handleOpacityChange}
               min={10}
               max={100}
@@ -174,7 +179,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               min={10}
               max={100}
               step={1}
-              value={settings.opacity}
+              value={config.opacity}
               onChange={(e) => handleOpacityInputChange(e.target.value)}
               className={cn(
                 'w-16 border-zinc-500/10',
@@ -195,135 +200,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
             Modes
           </h3>
           <div className="grid grid-cols-5 gap-1.5">
-            {[
-              {
-                icon: '🎯',
-                name: 'Focus',
-                prompt: `Help me focus on what's important on this screen.
-
-Identify:
-• The 3 most critical items requiring attention
-• Next actionable steps I should take
-• Potential distractions to ignore
-• Priority tasks or deadlines
-• Key information I shouldn't miss`
-              },
-              {
-                icon: '⚡',
-                name: 'Explain',
-                prompt: `Explain what I'm looking at in simple terms.
-
-Break down:
-• What this application/website does
-• How to use the interface effectively
-• What each section or feature is for
-• Common workflows and processes
-• Tips for getting things done faster`
-              },
-              {
-                icon: '➕',
-                name: 'Suggest',
-                prompt: `Give me practical suggestions and improvements.
-
-Recommend:
-• Better ways to organize or use this interface
-• Shortcuts or efficiency improvements
-• Missing features that would help
-• Alternative approaches or tools
-• Workflow optimizations I could implement`
-              },
-              {
-                icon: '❓',
-                name: 'Help',
-                prompt: `I need help understanding or fixing something.
-
-Assist with:
-• Troubleshooting any visible issues
-• Step-by-step guidance for tasks
-• Explaining error messages or warnings
-• Finding specific features or settings
-• Recovering from problems or mistakes`
-              },
-              {
-                icon: '📝',
-                name: 'Note',
-                prompt: `Create useful notes and documentation from what's shown.
-
-Generate:
-• Key points and takeaways summary
-• Action items and follow-up tasks
-• Important details worth remembering
-• Meeting notes or discussion points
-• Reference documentation for later use`
-              },
-              {
-                icon: '🎤',
-                name: 'Interview',
-                prompt: `Help me conduct or participate in an interview or meeting.
-
-Support with:
-• Preparing thoughtful questions to ask
-• Identifying key discussion topics
-• Summarizing conversation points
-• Suggesting follow-up questions
-• Tracking important responses and insights`
-              },
-              {
-                icon: '📚',
-                name: 'Learn',
-                prompt: `Help me learn and understand new concepts.
-
-Explain:
-• How things work and why
-• Connections to concepts I already know
-• Best practices and common patterns
-• Learning resources and next steps
-• Practical exercises to try`
-              },
-              {
-                icon: '⚡',
-                name: 'Quick',
-                prompt: `Give me a quick, actionable summary.
-
-Provide:
-• 30-second overview of what I'm seeing
-• Immediate next step to take
-• Most important thing to focus on right now
-• Quick win or easy improvement
-• Fast solution to any obvious problem`
-              },
-              {
-                icon: '🎨',
-                name: 'Design',
-                prompt: `Review the visual design and user experience.
-
-Evaluate:
-• Visual appeal and professional appearance
-• Ease of use and intuitive navigation
-• Accessibility and readability
-• Brand consistency and style
-• Suggestions for visual improvements`
-              },
-              {
-                icon: '🔧',
-                name: 'Debug',
-                prompt: `Help me identify and fix technical problems.
-
-Look for:
-• Error messages or broken functionality
-• Performance issues or slow loading
-• Code problems or implementation issues
-• Configuration or setup problems
-• Missing dependencies or resources`
-              }
-            ].map((mode) => (
+            {config.modes.map((mode) => (
               <button
-                key={mode.name}
-                onClick={() => updateSettings({ defaultPrompt: mode.prompt })}
+                key={mode.id}
+                onClick={() => selectMode(mode.id)}
                 className={cn(
                   'p-1.5 rounded border border-zinc-500/10 text-xs transition-all duration-200',
                   'flex flex-col items-center gap-0.5 hover:scale-105 min-h-[50px]',
-                  settings.defaultPrompt === mode.prompt
+                  selectedMode?.id === mode.id
                     ? effectiveTheme === 'dark'
                       ? 'bg-blue-600/20 border-blue-500/50 text-blue-300'
                       : 'bg-blue-500/20 border-blue-400/50 text-blue-700'
@@ -345,8 +229,91 @@ Look for:
           >
             <div className="font-medium mb-2 text-xs">Current Mode:</div>
             <pre className="text-xs leading-relaxed whitespace-pre-wrap font-sans">
-              {settings.defaultPrompt}
+              {selectedMode?.prompt || 'No mode selected'}
             </pre>
+          </div>
+        </div>
+
+        {/* Configuration */}
+        <div className="space-y-3">
+          <h3
+            className={cn(
+              'text-sm font-medium',
+              effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+            )}
+          >
+            Configuration
+          </h3>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div
+                className={cn(
+                  'text-xs px-2 py-1 rounded',
+                  config.apiKey.length > 0
+                    ? effectiveTheme === 'dark'
+                      ? 'bg-green-500/20 text-green-300'
+                      : 'bg-green-500/20 text-green-700'
+                    : effectiveTheme === 'dark'
+                      ? 'bg-red-500/20 text-red-300'
+                      : 'bg-red-500/20 text-red-700'
+                )}
+              >
+                {config.apiKey.length > 0 ? '✓ API Key Set' : '⚠ No API Key'}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.electronAPI.config.openConfigFile()}
+                className={cn(
+                  'flex items-center gap-2 justify-start',
+                  effectiveTheme === 'dark'
+                    ? 'text-white/70 hover:text-white hover:bg-white/10'
+                    : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
+                )}
+              >
+                <FileText size={14} />
+                Edit Config File
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.electronAPI.config.openConfigFolder()}
+                className={cn(
+                  'flex items-center gap-2 justify-start',
+                  effectiveTheme === 'dark'
+                    ? 'text-white/70 hover:text-white hover:bg-white/10'
+                    : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
+                )}
+              >
+                <ExternalLink size={14} />
+                Open Config Folder
+              </Button>
+            </div>
+
+            <p
+              className={cn(
+                'text-xs',
+                effectiveTheme === 'dark' ? 'text-white/60' : 'text-zinc-600'
+              )}
+            >
+              Edit the config file to set your Google API key and customize AI modes. Get your API
+              key from{' '}
+              <a
+                href="https://makersuite.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  'underline hover:no-underline',
+                  effectiveTheme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+                )}
+              >
+                Google AI Studio
+              </a>
+            </p>
           </div>
         </div>
 
@@ -361,8 +328,8 @@ Look for:
             AI Model
           </h3>
           <select
-            value={settings.aiModel}
-            onChange={(e) => updateSettings({ aiModel: e.target.value })}
+            value={config.aiModel}
+            onChange={(e) => updateConfig({ aiModel: e.target.value })}
             className={cn(
               'w-full p-2 rounded border border-zinc-500/10 text-sm',
               effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
@@ -473,7 +440,7 @@ Look for:
           <Button
             variant="ghost"
             size="sm"
-            onClick={resetSettings}
+            onClick={resetConfig}
             className={cn(
               'flex items-center gap-2 w-full',
               effectiveTheme === 'dark'
