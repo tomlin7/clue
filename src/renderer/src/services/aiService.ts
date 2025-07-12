@@ -215,17 +215,14 @@ Guidelines:
     let fullResponse = ''
     let hadFirstToken = false
     const stream = await this.model.stream(messages)
-    console.log('[AIService] Streaming started (askQuestionStream)')
     try {
       for await (const chunk of stream) {
-        console.log('[AIService] Chunk:', chunk)
         if (chunk?.content) {
           fullResponse += chunk.content
           onToken(fullResponse)
           hadFirstToken = true
         }
       }
-      console.log('[AIService] Streaming ended (askQuestionStream)')
     } catch (err) {
       console.error('[AIService] Streaming error (askQuestionStream):', err)
       if (!hadFirstToken) throw err
@@ -280,17 +277,14 @@ Guidelines:
     let fullResponse = ''
     let hadFirstToken = false
     const stream = await this.model.stream(messages)
-    console.log('[AIService] Streaming started (analyzeScreenshotStream)')
     try {
       for await (const chunk of stream) {
-        console.log('[AIService] Chunk:', chunk)
         if (chunk?.content) {
           fullResponse += chunk.content
           onToken(fullResponse)
           hadFirstToken = true
         }
       }
-      console.log('[AIService] Streaming ended (analyzeScreenshotStream)')
     } catch (err) {
       console.error('[AIService] Streaming error (analyzeScreenshotStream):', err)
       if (!hadFirstToken) throw err

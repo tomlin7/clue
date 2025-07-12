@@ -24,16 +24,10 @@ function App() {
 
   // Initialize AI service when API key is available
   useEffect(() => {
-    console.log('Config updated:', config)
-    console.log('API Key from config:', config.apiKey)
-    console.log('API Key length:', config.apiKey?.length)
-
     if (config.apiKey && config.apiKey.length > 0) {
-      console.log('Creating new AI service with API key')
       const newAiService = new AIService(config.apiKey)
       setAiService(newAiService)
     } else {
-      console.log('No valid API key, setting aiService to null')
       setAiService(null)
     }
   }, [config])
@@ -117,24 +111,17 @@ function App() {
   }
 
   const handleScreenshotAnalysis = async (imageData: string) => {
-    console.log('Screenshot analysis called')
-    console.log('Image data available:', !!imageData)
-    console.log('AI Service available:', !!aiService)
-
     // Check if we have a valid API key in config even if aiService is not ready
     if (!imageData) {
-      console.log('No image data provided')
       return
     }
 
     if (!config.apiKey || config.apiKey.length === 0) {
-      console.log('No API key in config')
       toast.error('Please set up your Google API key in settings first')
       return
     }
 
     if (!aiService) {
-      console.log('AI Service not initialized, creating new one with current API key')
       const tempAiService = new AIService(config.apiKey)
       setAiService(tempAiService)
 
@@ -144,7 +131,6 @@ function App() {
       try {
         const currentTranscription = audioService.getCurrentTranscription()
         await tempAiService.analyzeScreenshotStream(imageData, currentTranscription, (partial) => {
-          console.log('Partial:', partial)
           setResponse(partial)
         })
         // Update conversation sessions
@@ -172,7 +158,6 @@ function App() {
     try {
       const currentTranscription = audioService.getCurrentTranscription()
       await aiService.analyzeScreenshotStream(imageData, currentTranscription, (partial) => {
-        console.log('Partial:', partial)
         setResponse(partial)
       })
       // Update conversation sessions
@@ -205,7 +190,6 @@ function App() {
     setResponse('')
     try {
       await aiService.askQuestionStream(question, (partial) => {
-        console.log('Partial:', partial)
         setResponse(partial)
       })
       // Update conversation sessions
