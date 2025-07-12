@@ -82,10 +82,10 @@ html {
   /* True frosted glass effect */
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  
+
   position: relative;
   border-radius: 12px;
-  
+
   /* Only essential transitions */
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -94,7 +94,7 @@ html {
 :root .acrylic-panel {
   background: rgba(255, 255, 255, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 4px 16px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -105,7 +105,7 @@ html {
 :root.dark .acrylic-panel {
   background: rgba(0, 0, 0, 0.5) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 4px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
@@ -121,7 +121,7 @@ html {
 
 :root .acrylic-panel:hover {
   background: rgba(255, 255, 255, 0.8);
-  box-shadow: 
+  box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.15),
     0 6px 20px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -129,7 +129,7 @@ html {
 
 :root.dark .acrylic-panel:hover {
   background: rgba(0, 0, 0, 0.6) !important;
-  box-shadow: 
+  box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.5),
     0 6px 20px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
@@ -145,6 +145,10 @@ html {
 /* Utility classes */
 .bottom-border {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.zinc-border {
+  @apply border-zinc-500/20;
 }
 
 .dark .bottom-border {
