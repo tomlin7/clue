@@ -365,3 +365,44 @@ html {
   -webkit-line-clamp: 2;
   line-clamp: 2;
 }
+
+/* Shimmer effect for analyzing badge */
+.analyzing-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    currentColor 25%,
+    transparent 50%,
+    currentColor 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmer 4s ease-in-out infinite;
+}
+
+.dark .analyzing-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    currentColor 25%,
+    transparent 50%,
+    currentColor 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes textShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

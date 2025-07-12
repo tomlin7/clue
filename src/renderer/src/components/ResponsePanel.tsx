@@ -4,7 +4,7 @@ import { CardContent } from '@/components/ui/card'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
 import { Copy, History, Maximize2, Minimize2, Plus, Trash2 } from 'lucide-react'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
@@ -28,18 +28,9 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   isHistoryVisible,
   className
 }) => {
-  const [isMinimized, setIsMinimized] = useState(true)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const { effectiveTheme } = useTheme()
-
-  useEffect(() => {
-    if (isLoading) {
-      setIsAnalyzing(true)
-    } else {
-      setIsAnalyzing(false)
-    }
-  }, [isLoading])
 
   // Removed all contentHeight and resizing logic
 
@@ -82,23 +73,11 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
             className={cn(
               'border-0 text-sm',
               effectiveTheme === 'dark' ? ' text-white/90' : ' text-zinc-700'
+              // isLoading && 'analyzing-shimmer'
             )}
           >
-            AI Response
+            {isLoading ? 'Analyzing...' : 'AI Response'}
           </Badge>
-          {isAnalyzing && (
-            <Badge
-              variant="outline"
-              className={cn(
-                'animate-pulse border-0',
-                effectiveTheme === 'dark'
-                  ? 'bg-blue-500/20 text-blue-200'
-                  : 'bg-blue-100/60 text-blue-700'
-              )}
-            >
-              Analyzing screen...
-            </Badge>
-          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -194,38 +173,23 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
             )}
           >
             {isLoading && !response ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="flex items-center gap-2">
-                  <div
+              <div className="text-center py-4 text-sm">
+                <p className={cn(effectiveTheme === 'dark' ? 'text-white/50' : 'text-zinc-500')}>
+                  <Badge
                     className={cn(
-                      'animate-spin rounded-lg h-6 w-6 border-b-2',
-                      effectiveTheme === 'dark' ? 'border-zinc-400' : 'border-zinc-600'
+                      'px-2 py-1 rounded font-normal',
+                      effectiveTheme === 'dark'
+                        ? 'bg-white/10 text-white/80'
+                        : 'bg-zinc-500/10 text-zinc-500'
                     )}
-                  ></div>
-                  <span
-                    className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-zinc-600')}
                   >
-                    Analyzing...
-                  </span>
-                </div>
+                    Ctrl+Enter
+                  </Badge>{' '}
+                  to analyze screen
+                </p>
               </div>
             ) : response ? (
               <div className="streaming-text">
-                {isLoading && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <div
-                      className={cn(
-                        'animate-spin rounded-lg h-4 w-4 border-b-2',
-                        effectiveTheme === 'dark' ? 'border-zinc-400' : 'border-zinc-600'
-                      )}
-                    ></div>
-                    <span
-                      className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-zinc-600')}
-                    >
-                      Analyzing...
-                    </span>
-                  </div>
-                )}
                 <div
                   ref={contentRef}
                   className={cn(
