@@ -92,23 +92,23 @@ html {
 
 /* Light mode - Clean white frosted glass */
 :root .acrylic-panel {
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, calc(0.75 * var(--app-opacity, 0.8)));
+  border: 1px solid rgba(255, 255, 255, calc(0.5 * var(--app-opacity, 0.8)));
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 4px 16px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    inset 0 1px 0 rgba(255, 255, 255, calc(0.8 * var(--app-opacity, 0.8)));
   color: hsl(240 3.8% 46.1%);
 }
 
 /* Dark mode - Clean dark frosted glass */
 :root.dark .acrylic-panel {
-  background: rgba(0, 0, 0, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(0, 0, 0, calc(0.5 * var(--app-opacity, 0.8))) !important;
+  border: 1px solid rgba(255, 255, 255, calc(0.15 * var(--app-opacity, 0.8))) !important;
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 4px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    inset 0 1px 0 rgba(255, 255, 255, calc(0.1 * var(--app-opacity, 0.8))) !important;
   color: hsl(210 40% 98%) !important;
 }
 
@@ -120,19 +120,19 @@ html {
 }
 
 :root .acrylic-panel:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, calc(0.8 * var(--app-opacity, 0.8)));
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.15),
     0 6px 20px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    inset 0 1px 0 rgba(255, 255, 255, calc(0.9 * var(--app-opacity, 0.8)));
 }
 
 :root.dark .acrylic-panel:hover {
-  background: rgba(0, 0, 0, 0.6) !important;
+  background: rgba(0, 0, 0, calc(0.6 * var(--app-opacity, 0.8))) !important;
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.5),
     0 6px 20px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    inset 0 1px 0 rgba(255, 255, 255, calc(0.15 * var(--app-opacity, 0.8))) !important;
 }
 
 /* Remove all extra effects - no glow, no shimmer, no enhanced shadows */

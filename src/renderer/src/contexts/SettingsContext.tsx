@@ -14,7 +14,7 @@ interface SettingsContextType {
 }
 
 const defaultSettings: Settings = {
-  opacity: 80,
+  opacity: 100,
   defaultPrompt: `You are Clue, an AI assistant that helps users understand and interact with their screen content. 
         
 Key capabilities:
