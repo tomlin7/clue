@@ -285,8 +285,8 @@ function App() {
       {/* Full-screen transparent overlay */}
       <div className="absolute inset-0 pointer-events-none" />
 
-      {/* Show main panels only if onboarding is completed */}
-      {!showOnboarding && (
+      {/* Show main panels only if onboarding is completed and window is visible */}
+      {!showOnboarding && isVisible && (
         <>
           <PanelGroup
             onAskQuestion={handleAskQuestion}

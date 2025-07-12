@@ -100,14 +100,6 @@ function registerGlobalShortcuts(): void {
   globalShortcut.register('CommandOrControl+\\', () => {
     isVisible = !isVisible
     if (mainWindow) {
-      if (isVisible) {
-        mainWindow.show()
-        mainWindow.setIgnoreMouseEvents(false) // Allow interaction when visible
-        mainWindow.setAlwaysOnTop(true, 'screen-saver')
-      } else {
-        mainWindow.setIgnoreMouseEvents(true, { forward: true }) // Click-through when hidden
-        mainWindow.hide()
-      }
       mainWindow.webContents.send('toggle-visibility', isVisible)
     }
   })
