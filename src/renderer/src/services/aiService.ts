@@ -1,3 +1,4 @@
+import { AppConfig } from '@/contexts/ConfigContext'
 import { ConversationSession, ConversationSummary } from '@/types/conversation'
 import { AIMessage, BaseMessage, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
@@ -7,39 +8,35 @@ import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 export class AIService {
   private model: ChatGoogleGenerativeAI
   private currentSession: ConversationSession | null = null
-  private apiKey: string
+  private config: AppConfig
   private readonly SESSIONS_STORAGE_KEY = 'clue-conversation-sessions'
-  private readonly CURRENT_SESSION_KEY = 'clue-current-session'
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey
+  constructor(config: AppConfig) {
+    this.config = config
     this.model = new ChatGoogleGenerativeAI({
-      model: 'gemini-2.0-flash',
+      model: config.aiModel || 'gemini-2.0-flash',
       maxOutputTokens: 2048,
       temperature: 0.7,
-      apiKey: this.apiKey
+      apiKey: config.apiKey
     })
 
-    // Load or create current session
-    this.loadCurrentSession()
+    // Always create a new session when app opens
+    this.createNewSession()
   }
 
   private createSystemMessage(): SystemMessage {
-    return new SystemMessage(
-      `You are Clue, an AI assistant that helps users understand and interact with their screen content. 
-        
-Key capabilities:
-- Analyze screenshots and describe what you see
-- Answer questions about screen content and previous conversations
-- Provide helpful suggestions and insights
-- Remember context from previous interactions
+    const selectedMode = this.config.modes.find((m) => m.id === this.config.selectedModeId)
 
-Guidelines:
-- Be concise but thorough in your responses
-- Reference previous conversations when relevant
-- Help users understand relationships between different screenshots or questions
-- Maintain conversation context across multiple interactions`
-    )
+    if (!selectedMode?.prompt) {
+      // Fallback to first available mode
+      const firstMode = this.config.modes[0]
+      if (!firstMode?.prompt) {
+        throw new Error('No modes available with prompts')
+      }
+      return new SystemMessage(firstMode.prompt)
+    }
+
+    return new SystemMessage(selectedMode.prompt)
   }
 
   private generateSessionTitle(firstMessage: string): string {
@@ -64,7 +61,6 @@ Guidelines:
     }
 
     this.currentSession = newSession
-    this.saveCurrentSession()
     return newSession
   }
 
@@ -73,7 +69,6 @@ Guidelines:
     const session = sessions.find((s) => s.id === sessionId)
     if (session) {
       this.currentSession = session
-      this.saveCurrentSession()
       return session
     }
     return null
@@ -98,9 +93,7 @@ Guidelines:
           [
             {
               type: 'text',
-              text: `Analyze this screenshot and provide helpful insights. ${
-                transcription ? `Also consider this audio transcription: "${transcription}"` : ''
-              }`
+              text: `Analyze the screen first. ${transcription ? `Also: "${transcription}"` : ''}`
             },
             {
               type: 'image_url',
@@ -119,7 +112,7 @@ Guidelines:
       })
 
       const userMessage = new HumanMessage(
-        `Screenshot analysis request${transcription ? ` with transcription: "${transcription}"` : ''}`
+        transcription ? `Screenshot with audio: "${transcription}"` : 'Screenshot'
       )
       const aiMessage = new AIMessage(response.content as string)
 
@@ -139,7 +132,7 @@ Guidelines:
       }
 
       // Save session
-      this.saveCurrentSession()
+      this.saveSession(this.currentSession!)
 
       return response.content as string
     } catch (error) {
@@ -191,7 +184,7 @@ Guidelines:
       }
 
       // Save session
-      this.saveCurrentSession()
+      this.saveSession(this.currentSession!)
 
       return response.content as string
     } catch (error) {
@@ -239,7 +232,7 @@ Guidelines:
       const systemMsg = this.currentSession.messages[0]
       this.currentSession.messages = [systemMsg, ...this.currentSession.messages.slice(-20)]
     }
-    this.saveCurrentSession()
+    this.saveSession(this.currentSession!)
   }
 
   /**
@@ -261,9 +254,7 @@ Guidelines:
       content: [
         {
           type: 'text',
-          text: `Analyze this screenshot and provide helpful insights. ${
-            transcription ? `Also consider this audio transcription: "${transcription}"` : ''
-          }`
+          text: `Analyze the screen first. ${transcription ? `Also: "${transcription}"` : ''}`
         },
         {
           type: 'image_url',
@@ -290,7 +281,7 @@ Guidelines:
       if (!hadFirstToken) throw err
     }
     const userMessage = new HumanMessage(
-      `Screenshot analysis request${transcription ? ` with transcription: "${transcription}"` : ''}`
+      transcription ? `Screenshot with audio: "${transcription}"` : 'Screenshot'
     )
     const aiMessage = new AIMessage(fullResponse)
     if (this.currentSession.messages.length === 1) {
@@ -302,7 +293,7 @@ Guidelines:
       const systemMsg = this.currentSession.messages[0]
       this.currentSession.messages = [systemMsg, ...this.currentSession.messages.slice(-20)]
     }
-    this.saveCurrentSession()
+    this.saveSession(this.currentSession!)
   }
 
   clearHistory(): void {
@@ -310,7 +301,7 @@ Guidelines:
       this.currentSession.messages = [this.createSystemMessage()]
       this.currentSession.title = 'New Conversation'
       this.currentSession.lastModified = new Date()
-      this.saveCurrentSession()
+      this.saveSession(this.currentSession!)
     }
   }
 
@@ -386,54 +377,6 @@ Guidelines:
     }
   }
 
-  private loadCurrentSession(): void {
-    try {
-      const stored = localStorage.getItem(this.CURRENT_SESSION_KEY)
-      if (stored) {
-        const sessionData = JSON.parse(stored)
-        this.currentSession = {
-          ...sessionData,
-          createdAt: new Date(sessionData.createdAt),
-          lastModified: new Date(sessionData.lastModified),
-          messages: sessionData.messages.map((msg: any) => {
-            switch (msg.type) {
-              case 'system':
-                return new SystemMessage(msg.content)
-              case 'human':
-                return new HumanMessage(msg.content)
-              case 'ai':
-                return new AIMessage(msg.content)
-              default:
-                return new HumanMessage(msg.content)
-            }
-          })
-        }
-      } else {
-        this.createNewSession()
-      }
-    } catch (error) {
-      console.warn('Failed to load current session:', error)
-      this.createNewSession()
-    }
-  }
-
-  private saveCurrentSession(): void {
-    if (!this.currentSession) return
-
-    try {
-      const sessionData = {
-        ...this.currentSession,
-        messages: this.currentSession.messages.map((msg) => ({
-          type: msg._getType(),
-          content: msg.content
-        }))
-      }
-      localStorage.setItem(this.CURRENT_SESSION_KEY, JSON.stringify(sessionData))
-    } catch (error) {
-      console.warn('Failed to save current session:', error)
-    }
-  }
-
   private saveSession(session: ConversationSession): void {
     const sessions = this.getAllSessions()
     const existingIndex = sessions.findIndex((s) => s.id === session.id)
@@ -459,6 +402,27 @@ Guidelines:
       localStorage.setItem(this.SESSIONS_STORAGE_KEY, JSON.stringify(sessionsData))
     } catch (error) {
       console.warn('Failed to save sessions:', error)
+    }
+  }
+
+  updateConfig(newConfig: AppConfig): void {
+    this.config = newConfig
+
+    // Update the model if aiModel changed
+    if (this.model.model !== newConfig.aiModel) {
+      this.model = new ChatGoogleGenerativeAI({
+        model: newConfig.aiModel,
+        maxOutputTokens: 2048,
+        temperature: 0.7,
+        apiKey: newConfig.apiKey
+      })
+    }
+
+    // Update current session's system message if mode changed
+    if (this.currentSession && this.currentSession.messages.length > 0) {
+      const newSystemMessage = this.createSystemMessage()
+      this.currentSession.messages[0] = newSystemMessage
+      this.saveSession(this.currentSession!)
     }
   }
 }

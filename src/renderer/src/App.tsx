@@ -27,12 +27,18 @@ function App() {
   // Initialize AI service when API key is available
   useEffect(() => {
     if (config.apiKey && config.apiKey.length > 0) {
-      const newAiService = new AIService(config.apiKey)
-      setAiService(newAiService)
+      if (aiService) {
+        // Update existing service with new config
+        aiService.updateConfig(config)
+      } else {
+        // Create new service
+        const newAiService = new AIService(config)
+        setAiService(newAiService)
+      }
     } else {
       setAiService(null)
     }
-  }, [config])
+  }, [config, aiService])
 
   // Update conversation sessions when aiService changes
   useEffect(() => {
@@ -124,7 +130,7 @@ function App() {
     }
 
     if (!aiService) {
-      const tempAiService = new AIService(config.apiKey)
+      const tempAiService = new AIService(config)
       setAiService(tempAiService)
 
       // Use the temp service for this analysis
