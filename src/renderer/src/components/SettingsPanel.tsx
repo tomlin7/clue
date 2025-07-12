@@ -184,54 +184,134 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               {
                 icon: '🔍',
                 name: 'General',
-                prompt: 'Analyze what you see on the screen in detail.'
+                prompt: `Analyze what you see on the screen in comprehensive detail.
+
+Describe:
+• Visual elements, layout, and structure
+• Content and text visible
+• Interactive elements and their state
+• Overall purpose and context
+• Any notable patterns or design choices`
               },
               {
                 icon: '🖼️',
                 name: 'UI',
-                prompt: 'Describe the user interface elements and their layout on the screen.'
+                prompt: `Perform a detailed user interface analysis.
+
+Examine:
+• Navigation structure and menu organization
+• Button placement and visual hierarchy
+• Form elements and input fields
+• Color scheme and visual consistency
+• Spacing, alignment, and responsive design
+• User experience patterns and usability`
               },
               {
                 icon: '🐛',
                 name: 'Bug',
-                prompt: 'Identify any errors, bugs, or issues visible on the screen.'
+                prompt: `Identify and analyze potential issues, errors, or bugs visible on the screen.
+
+Look for:
+• Error messages or warning indicators
+• Broken layouts or misaligned elements
+• Missing content or broken images
+• Console errors or debug information
+• Accessibility violations
+• Performance issues or loading problems`
               },
               {
                 icon: '💻',
                 name: 'Code',
-                prompt: 'Explain the code visible on the screen and suggest improvements.'
+                prompt: `Analyze the code visible on the screen and provide detailed technical insights.
+
+Focus on:
+• Code structure, organization, and patterns
+• Potential bugs, security issues, or performance problems
+• Best practices and improvement suggestions
+• Function/method analysis and logic flow
+• Variable naming and code readability
+• Architecture and design pattern recommendations`
               },
               {
                 icon: '📋',
                 name: 'Summary',
-                prompt: 'Summarize the content and key information shown on the screen.'
+                prompt: `Provide a comprehensive summary of the content and information shown.
+
+Include:
+• Main topics and key points
+• Important data, numbers, or statistics
+• Action items or next steps mentioned
+• Overall context and purpose
+• Relationships between different elements
+• Critical insights or takeaways`
               },
               {
                 icon: '♿',
                 name: 'A11y',
-                prompt: "Provide accessibility insights and recommendations for what's shown."
+                prompt: `Conduct a thorough accessibility review and provide improvement recommendations.
+
+Evaluate:
+• Color contrast and readability
+• Keyboard navigation and focus indicators
+• Screen reader compatibility
+• Alt text and semantic markup
+• ARIA labels and roles
+• Mobile accessibility and touch targets
+• Compliance with WCAG guidelines`
               },
               {
                 icon: '🎨',
                 name: 'Design',
-                prompt:
-                  'Analyze the design, colors, typography, and visual hierarchy on the screen.'
+                prompt: `Analyze the visual design, aesthetics, and design system implementation.
+
+Review:
+• Typography choices, hierarchy, and readability
+• Color palette, contrast, and brand consistency
+• Visual balance, spacing, and composition
+• Icon usage and visual language
+• Component design and design system adherence
+• Overall aesthetic appeal and modern design trends`
               },
               {
                 icon: '🔒',
                 name: 'Security',
-                prompt: 'Identify any security concerns or vulnerabilities visible on the screen.'
+                prompt: `Identify potential security concerns, vulnerabilities, and privacy issues.
+
+Examine:
+• Exposed sensitive information or credentials
+• Input validation and data handling
+• Authentication and authorization patterns
+• HTTPS usage and secure connections
+• Privacy concerns and data exposure
+• Security headers and configuration
+• Potential injection or XSS vulnerabilities`
               },
               {
                 icon: '⚡',
                 name: 'Perf',
-                prompt:
-                  "Suggest optimizations and performance improvements based on what's visible."
+                prompt: `Analyze performance aspects and suggest optimizations.
+
+Focus on:
+• Loading times and resource optimization
+• Image sizes and compression opportunities
+• Code bundling and minification
+• Caching strategies and CDN usage
+• Database queries and API efficiency
+• Memory usage and potential leaks
+• Rendering performance and smooth interactions`
               },
               {
                 icon: '🎓',
                 name: 'Learn',
-                prompt: "Help me understand and learn from what's shown on the screen."
+                prompt: `Provide educational insights and learning opportunities based on what's shown.
+
+Explain:
+• Technologies, frameworks, or tools being used
+• Concepts, patterns, or methodologies demonstrated
+• Learning resources and next steps
+• Best practices and industry standards
+• How different components work together
+• Skills or knowledge areas to develop further`
               }
             ].map((mode) => (
               <button
@@ -256,12 +336,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           </div>
           <div
             className={cn(
-              'p-3 rounded border border-zinc-500/10 text-xs',
+              'p-3 rounded border border-zinc-500/10 text-xs max-h-32 overflow-y-auto',
               effectiveTheme === 'dark' ? 'bg-white/5 text-white/70' : 'bg-white/30 text-zinc-600'
             )}
           >
-            <div className="font-medium mb-1 text-xs">Current Mode:</div>
-            <div className="text-xs leading-relaxed">{settings.defaultPrompt}</div>
+            <div className="font-medium mb-2 text-xs">Current Mode:</div>
+            <pre className="text-xs leading-relaxed whitespace-pre-wrap font-sans">
+              {settings.defaultPrompt}
+            </pre>
           </div>
         </div>
 
