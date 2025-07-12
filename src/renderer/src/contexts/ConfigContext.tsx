@@ -10,13 +10,13 @@ export interface AIMode {
 }
 
 export interface AppConfig {
-  opacity: number
   aiModel: string
+  apiKey: string
   theme: 'light' | 'dark' | 'system'
-  position: { x: number; y: number }
+  opacity: number
   selectedModeId: string
   modes: AIMode[]
-  apiKey: string
+  position: { x: number; y: number }
 }
 
 interface ConfigContextType {

@@ -1,7 +1,7 @@
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
 import { ConversationSummary } from '@/types/conversation'
-import { Clock, MessageCircle, Trash2 } from 'lucide-react'
+import { Clock, Trash2 } from 'lucide-react'
 import React from 'react'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
@@ -42,7 +42,7 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
 
   return (
     <Card
-      className="acrylic-panel w-80 max-h-96 overflow-hidden"
+      className="acrylic-panel w-100 max-h-100 overflow-hidden p-0"
       onMouseEnter={() => window.electronAPI.setClickThrough(false)}
       onMouseLeave={() => window.electronAPI.setClickThrough(true)}
     >
@@ -57,15 +57,15 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
         </h3>
 
         {sessions.length === 0 ? (
-          <div className="text-center py-8">
-            <MessageCircle
+          <div className="text-center">
+            {/* <MessageCircle
               className={cn(
                 'h-8 w-8 mx-auto mb-2',
                 effectiveTheme === 'dark' ? 'text-white/30' : 'text-gray-400'
               )}
-            />
+            /> */}
             <p className={cn(effectiveTheme === 'dark' ? 'text-white/50' : 'text-zinc-500')}>
-              No conversations yet
+              No conversations
             </p>
           </div>
         ) : (

@@ -175,13 +175,13 @@ Look for:
 ]
 
 const defaultConfig: AppConfig = {
-  opacity: 100,
   aiModel: 'gemini-2.0-flash',
+  apiKey: '',
   theme: 'system',
-  position: { x: 100, y: 100 },
+  opacity: 100,
   selectedModeId: 'focus',
   modes: defaultModes,
-  apiKey: ''
+  position: { x: 100, y: 100 }
 }
 
 class ConfigManager {
