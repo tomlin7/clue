@@ -20,6 +20,8 @@ interface PanelGroupProps {
   isSettingsOpen?: boolean
   conversationSessions?: ConversationSummary[]
   currentSessionId?: string
+  position: { x: number; y: number }
+  onPositionChange: (position: { x: number; y: number }) => void
 }
 
 export const PanelGroup: React.FC<PanelGroupProps> = ({
@@ -37,9 +39,10 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
   onOpenSettings,
   isSettingsOpen = false,
   conversationSessions = [],
-  currentSessionId
+  currentSessionId,
+  position,
+  onPositionChange
 }) => {
-  const [position, setPosition] = useState({ x: 100, y: 100 })
   const [screenSize, setScreenSize] = useState({ width: 1920, height: 1080 })
   const [isHistoryVisible, setIsHistoryVisible] = useState(false)
 
@@ -61,27 +64,25 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
   useEffect(() => {
     const handleMovePanels = (_: Electron.IpcRendererEvent, direction: string) => {
       const step = 50
-      setPosition((prev) => {
-        let newX = prev.x
-        let newY = prev.y
+      let newX = position.x
+      let newY = position.y
 
-        switch (direction) {
-          case 'up':
-            newY = Math.max(0, prev.y - step)
-            break
-          case 'down':
-            newY = Math.min(screenSize.height - 400, prev.y + step)
-            break
-          case 'left':
-            newX = Math.max(0, prev.x - step)
-            break
-          case 'right':
-            newX = Math.min(screenSize.width - 600, prev.x + step)
-            break
-        }
+      switch (direction) {
+        case 'up':
+          newY = Math.max(0, position.y - step)
+          break
+        case 'down':
+          newY = Math.min(screenSize.height - 400, position.y + step)
+          break
+        case 'left':
+          newX = Math.max(0, position.x - step)
+          break
+        case 'right':
+          newX = Math.min(screenSize.width - 600, position.x + step)
+          break
+      }
 
-        return { x: newX, y: newY }
-      })
+      onPositionChange({ x: newX, y: newY })
     }
 
     window.electronAPI.onMovePanels(handleMovePanels)
@@ -89,7 +90,7 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
     return () => {
       window.electronAPI.removeAllListeners('move-panels')
     }
-  }, [screenSize])
+  }, [screenSize, position, onPositionChange])
 
   if (!isVisible) return null
 

@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import './App.css'
 
 function App() {
-  const { config } = useConfig()
+  const { config, updateConfig } = useConfig()
   const [aiService, setAiService] = useState<AIService | null>(null)
   const [audioService] = useState(() => new AudioService())
   const [response, setResponse] = useState('')
@@ -304,6 +304,8 @@ function App() {
             isSettingsOpen={isSettingsOpen}
             conversationSessions={conversationSessions}
             currentSessionId={currentSessionId}
+            position={config.position}
+            onPositionChange={(position) => updateConfig({ position })}
           />
 
           {/* Settings Panel - positioned in top right of app */}
