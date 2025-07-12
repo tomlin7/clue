@@ -20,7 +20,7 @@ export const useAIChat = () => {
   const initializeChat = useCallback(() => {
     if (!modelRef.current) {
       // Note: In production, the API key should be provided by the user or stored securely
-      const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || 'YOUR_GOOGLE_API_KEY_HERE'
+      const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || 'your-google-api-key-here'
 
       modelRef.current = new ChatGoogleGenerativeAI({
         apiKey: apiKey,

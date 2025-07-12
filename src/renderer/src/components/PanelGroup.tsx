@@ -1,5 +1,7 @@
+import { BaseMessage } from '@langchain/core/messages'
 import React, { useEffect, useState } from 'react'
 import { ControlPanel } from './ControlPanel'
+import { ConversationHistory } from './ConversationHistory'
 import { ResponsePanel } from './ResponsePanel'
 
 interface PanelGroupProps {
@@ -12,6 +14,7 @@ interface PanelGroupProps {
   transcription: string
   isVisible: boolean
   onOpenSettings: () => void
+  conversationHistory?: BaseMessage[]
 }
 
 export const PanelGroup: React.FC<PanelGroupProps> = ({
@@ -23,7 +26,8 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
   onToggleRecording,
   transcription,
   isVisible,
-  onOpenSettings
+  onOpenSettings,
+  conversationHistory = []
 }) => {
   const [position, setPosition] = useState({ x: 100, y: 100 })
   const [screenSize, setScreenSize] = useState({ width: 1920, height: 1080 })
@@ -106,6 +110,11 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
           onClear={onClearResponse}
           className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300"
         />
+
+        {/* Show conversation history when there are previous messages */}
+        {conversationHistory.length > 0 && (
+          <ConversationHistory messages={conversationHistory} isVisible={true} />
+        )}
       </div>
     </div>
   )

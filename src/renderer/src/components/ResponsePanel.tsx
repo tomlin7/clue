@@ -58,10 +58,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
     >
       {/* Header */}
       <div
-        className={cn(
-          'flex items-center justify-between p-4 border-b relative z-20',
-          effectiveTheme === 'dark' ? 'border-white/10' : 'border-black/10'
-        )}
+        className={cn('flex items-center justify-between py-1 px-2 bottom-border relative z-20 ')}
       >
         <div className="flex items-center gap-2">
           <Badge
@@ -146,7 +143,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                 <div
                   className={cn(
                     'animate-spin rounded-lg h-6 w-6 border-b-2',
-                    effectiveTheme === 'dark' ? 'border-blue-400' : 'border-blue-600'
+                    effectiveTheme === 'dark' ? 'border-zinc-400' : 'border-zinc-600'
                   )}
                 ></div>
                 <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-gray-600')}>

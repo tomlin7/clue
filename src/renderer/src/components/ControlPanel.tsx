@@ -15,6 +15,7 @@ interface ControlPanelProps {
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
+  // @ts-ignore - keeping for future use when input form is re-enabled
   onAskQuestion,
   isRecording,
   onToggleRecording,

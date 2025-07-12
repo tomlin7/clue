@@ -3,6 +3,7 @@ import { SettingsPanel } from '@/components/SettingsPanel'
 import { Toaster } from '@/components/ui/sonner'
 import { AIService } from '@/services/aiService'
 import { AudioService } from '@/services/audioService'
+import { BaseMessage } from '@langchain/core/messages'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import './App.css'
@@ -18,6 +19,23 @@ function App() {
   const [isRecording, setIsRecording] = useState(false)
   const [transcription, setTranscription] = useState('')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [conversationHistory, setConversationHistory] = useState<BaseMessage[]>([])
+
+  // Update conversation history when aiService changes
+  useEffect(() => {
+    const updateHistory = () => {
+      const history = aiService.getConversationHistory()
+      setConversationHistory(history)
+    }
+
+    // Update immediately
+    updateHistory()
+
+    // Set up interval to check for updates
+    const interval = setInterval(updateHistory, 1000)
+
+    return () => clearInterval(interval)
+  }, [aiService])
 
   useEffect(() => {
     const setupElectronListeners = () => {
@@ -82,6 +100,9 @@ function App() {
       const analysis = await aiService.analyzeScreenshot(imageData, currentTranscription)
       setResponse(analysis)
 
+      // Update conversation history
+      setConversationHistory(aiService.getConversationHistory())
+
       // Clear transcription after use
       if (currentTranscription) {
         setTranscription('')
@@ -104,6 +125,10 @@ function App() {
     try {
       const answer = await aiService.askQuestion(question)
       setResponse(answer)
+
+      // Update conversation history
+      setConversationHistory(aiService.getConversationHistory())
+
       toast.success('Question answered')
     } catch (error) {
       console.error('Error asking question:', error)
@@ -116,6 +141,10 @@ function App() {
   const handleClearResponse = () => {
     setResponse('')
     aiService.clearHistory()
+
+    // Update conversation history
+    setConversationHistory(aiService.getConversationHistory())
+
     toast.success('Response cleared')
   }
 
@@ -142,6 +171,7 @@ function App() {
         transcription={transcription}
         isVisible={isVisible}
         onOpenSettings={handleOpenSettings}
+        conversationHistory={conversationHistory}
       />
 
       {/* Settings Panel - positioned in top right of app */}

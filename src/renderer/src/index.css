@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import 'highlight.js/styles/github-dark.css';
 
 :root {
   --background: 0 0% 100%;
@@ -219,6 +218,11 @@ html {
   }
 }
 
+.bottom-border {
+  /*use tailwindcss*/
+  @apply border-b border-gray-200 dark:border-zinc-700/50;
+}
+
 /* Ensure overlay text is visible */
 .overlay-text {
   color: white;
@@ -227,4 +231,39 @@ html {
 
 .dark .overlay-text {
   color: white;
+}
+
+/* Custom scrollbar styles to match dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.02);
 }
