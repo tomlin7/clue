@@ -182,136 +182,124 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           <div className="grid grid-cols-5 gap-1.5">
             {[
               {
-                icon: '🔍',
-                name: 'General',
-                prompt: `Analyze what you see on the screen in comprehensive detail.
+                icon: '🎯',
+                name: 'Focus',
+                prompt: `Help me focus on what's important on this screen.
 
-Describe:
-• Visual elements, layout, and structure
-• Content and text visible
-• Interactive elements and their state
-• Overall purpose and context
-• Any notable patterns or design choices`
+Identify:
+• The 3 most critical items requiring attention
+• Next actionable steps I should take
+• Potential distractions to ignore
+• Priority tasks or deadlines
+• Key information I shouldn't miss`
               },
               {
-                icon: '🖼️',
-                name: 'UI',
-                prompt: `Perform a detailed user interface analysis.
+                icon: '⚡',
+                name: 'Explain',
+                prompt: `Explain what I'm looking at in simple terms.
 
-Examine:
-• Navigation structure and menu organization
-• Button placement and visual hierarchy
-• Form elements and input fields
-• Color scheme and visual consistency
-• Spacing, alignment, and responsive design
-• User experience patterns and usability`
+Break down:
+• What this application/website does
+• How to use the interface effectively
+• What each section or feature is for
+• Common workflows and processes
+• Tips for getting things done faster`
               },
               {
-                icon: '🐛',
-                name: 'Bug',
-                prompt: `Identify and analyze potential issues, errors, or bugs visible on the screen.
+                icon: '➕',
+                name: 'Suggest',
+                prompt: `Give me practical suggestions and improvements.
 
-Look for:
-• Error messages or warning indicators
-• Broken layouts or misaligned elements
-• Missing content or broken images
-• Console errors or debug information
-• Accessibility violations
-• Performance issues or loading problems`
+Recommend:
+• Better ways to organize or use this interface
+• Shortcuts or efficiency improvements
+• Missing features that would help
+• Alternative approaches or tools
+• Workflow optimizations I could implement`
               },
               {
-                icon: '💻',
-                name: 'Code',
-                prompt: `Analyze the code visible on the screen and provide detailed technical insights.
+                icon: '❓',
+                name: 'Help',
+                prompt: `I need help understanding or fixing something.
 
-Focus on:
-• Code structure, organization, and patterns
-• Potential bugs, security issues, or performance problems
-• Best practices and improvement suggestions
-• Function/method analysis and logic flow
-• Variable naming and code readability
-• Architecture and design pattern recommendations`
+Assist with:
+• Troubleshooting any visible issues
+• Step-by-step guidance for tasks
+• Explaining error messages or warnings
+• Finding specific features or settings
+• Recovering from problems or mistakes`
               },
               {
-                icon: '📋',
-                name: 'Summary',
-                prompt: `Provide a comprehensive summary of the content and information shown.
+                icon: '📝',
+                name: 'Note',
+                prompt: `Create useful notes and documentation from what's shown.
 
-Include:
-• Main topics and key points
-• Important data, numbers, or statistics
-• Action items or next steps mentioned
-• Overall context and purpose
-• Relationships between different elements
-• Critical insights or takeaways`
+Generate:
+• Key points and takeaways summary
+• Action items and follow-up tasks
+• Important details worth remembering
+• Meeting notes or discussion points
+• Reference documentation for later use`
               },
               {
-                icon: '♿',
-                name: 'A11y',
-                prompt: `Conduct a thorough accessibility review and provide improvement recommendations.
+                icon: '🎤',
+                name: 'Interview',
+                prompt: `Help me conduct or participate in an interview or meeting.
 
-Evaluate:
-• Color contrast and readability
-• Keyboard navigation and focus indicators
-• Screen reader compatibility
-• Alt text and semantic markup
-• ARIA labels and roles
-• Mobile accessibility and touch targets
-• Compliance with WCAG guidelines`
+Support with:
+• Preparing thoughtful questions to ask
+• Identifying key discussion topics
+• Summarizing conversation points
+• Suggesting follow-up questions
+• Tracking important responses and insights`
+              },
+              {
+                icon: '📚',
+                name: 'Learn',
+                prompt: `Help me learn and understand new concepts.
+
+Explain:
+• How things work and why
+• Connections to concepts I already know
+• Best practices and common patterns
+• Learning resources and next steps
+• Practical exercises to try`
+              },
+              {
+                icon: '⚡',
+                name: 'Quick',
+                prompt: `Give me a quick, actionable summary.
+
+Provide:
+• 30-second overview of what I'm seeing
+• Immediate next step to take
+• Most important thing to focus on right now
+• Quick win or easy improvement
+• Fast solution to any obvious problem`
               },
               {
                 icon: '🎨',
                 name: 'Design',
-                prompt: `Analyze the visual design, aesthetics, and design system implementation.
+                prompt: `Review the visual design and user experience.
 
-Review:
-• Typography choices, hierarchy, and readability
-• Color palette, contrast, and brand consistency
-• Visual balance, spacing, and composition
-• Icon usage and visual language
-• Component design and design system adherence
-• Overall aesthetic appeal and modern design trends`
+Evaluate:
+• Visual appeal and professional appearance
+• Ease of use and intuitive navigation
+• Accessibility and readability
+• Brand consistency and style
+• Suggestions for visual improvements`
               },
               {
-                icon: '🔒',
-                name: 'Security',
-                prompt: `Identify potential security concerns, vulnerabilities, and privacy issues.
+                icon: '🔧',
+                name: 'Debug',
+                prompt: `Help me identify and fix technical problems.
 
-Examine:
-• Exposed sensitive information or credentials
-• Input validation and data handling
-• Authentication and authorization patterns
-• HTTPS usage and secure connections
-• Privacy concerns and data exposure
-• Security headers and configuration
-• Potential injection or XSS vulnerabilities`
-              },
-              {
-                icon: '⚡',
-                name: 'Perf',
-                prompt: `Analyze performance aspects and suggest optimizations.
-
-Focus on:
-• Loading times and resource optimization
-• Image sizes and compression opportunities
-• Code bundling and minification
-• Caching strategies and CDN usage
-• Database queries and API efficiency
-• Memory usage and potential leaks
-• Rendering performance and smooth interactions`
-              },
-              {
-                icon: '🎓',
-                name: 'Learn',
-                prompt: `Provide educational insights and learning opportunities based on what's shown.
-
-Explain:
-• Technologies, frameworks, or tools being used
-• Concepts, patterns, or methodologies demonstrated
-• Learning resources and next steps
-• Best practices and industry standards
-• How different components work together
-• Skills or knowledge areas to develop further`
+Look for:
+• Error messages or broken functionality
+• Performance issues or slow loading
+• Code problems or implementation issues
+• Configuration or setup problems
+• Missing dependencies or resources`
               }
             ].map((mode) => (
               <button
