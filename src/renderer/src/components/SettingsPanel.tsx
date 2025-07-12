@@ -169,7 +169,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           </div>
         </div>
 
-        {/* Default Prompt Settings */}
+        {/* AI Modes */}
         <div className="space-y-3">
           <h3
             className={cn(
@@ -177,56 +177,91 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
-            AI Prompt Template
+            Modes
           </h3>
-          <div className="space-y-2">
-            <select
-              value={settings.defaultPrompt}
-              onChange={(e) => updateSettings({ defaultPrompt: e.target.value })}
-              className={cn(
-                'w-full p-2 rounded border border-zinc-500/10 text-sm',
-                effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
-              )}
-            >
-              <option value="Analyze what you see on the screen in detail.">
-                🔍 General Analysis
-              </option>
-              <option value="Describe the user interface elements and their layout on the screen.">
-                🖼️ UI Description
-              </option>
-              <option value="Identify any errors, bugs, or issues visible on the screen.">
-                🐛 Bug Detection
-              </option>
-              <option value="Explain the code visible on the screen and suggest improvements.">
-                💻 Code Review
-              </option>
-              <option value="Summarize the content and key information shown on the screen.">
-                📋 Content Summary
-              </option>
-              <option value="Provide accessibility insights and recommendations for what's shown.">
-                ♿ Accessibility Review
-              </option>
-              <option value="Analyze the design, colors, typography, and visual hierarchy on the screen.">
-                🎨 Design Analysis
-              </option>
-              <option value="Identify any security concerns or vulnerabilities visible on the screen.">
-                🔒 Security Review
-              </option>
-              <option value="Suggest optimizations and performance improvements based on what's visible.">
-                ⚡ Performance Review
-              </option>
-              <option value="Help me understand and learn from what's shown on the screen.">
-                🎓 Educational Guide
-              </option>
-            </select>
-            <div
-              className={cn(
-                'p-2 rounded border border-zinc-500/10 text-xs',
-                effectiveTheme === 'dark' ? 'bg-white/5 text-white/70' : 'bg-white/30 text-zinc-600'
-              )}
-            >
-              <strong>Current:</strong> {settings.defaultPrompt}
-            </div>
+          <div className="grid grid-cols-5 gap-1.5">
+            {[
+              {
+                icon: '🔍',
+                name: 'General',
+                prompt: 'Analyze what you see on the screen in detail.'
+              },
+              {
+                icon: '🖼️',
+                name: 'UI',
+                prompt: 'Describe the user interface elements and their layout on the screen.'
+              },
+              {
+                icon: '🐛',
+                name: 'Bug',
+                prompt: 'Identify any errors, bugs, or issues visible on the screen.'
+              },
+              {
+                icon: '💻',
+                name: 'Code',
+                prompt: 'Explain the code visible on the screen and suggest improvements.'
+              },
+              {
+                icon: '📋',
+                name: 'Summary',
+                prompt: 'Summarize the content and key information shown on the screen.'
+              },
+              {
+                icon: '♿',
+                name: 'A11y',
+                prompt: "Provide accessibility insights and recommendations for what's shown."
+              },
+              {
+                icon: '🎨',
+                name: 'Design',
+                prompt:
+                  'Analyze the design, colors, typography, and visual hierarchy on the screen.'
+              },
+              {
+                icon: '🔒',
+                name: 'Security',
+                prompt: 'Identify any security concerns or vulnerabilities visible on the screen.'
+              },
+              {
+                icon: '⚡',
+                name: 'Perf',
+                prompt:
+                  "Suggest optimizations and performance improvements based on what's visible."
+              },
+              {
+                icon: '🎓',
+                name: 'Learn',
+                prompt: "Help me understand and learn from what's shown on the screen."
+              }
+            ].map((mode) => (
+              <button
+                key={mode.name}
+                onClick={() => updateSettings({ defaultPrompt: mode.prompt })}
+                className={cn(
+                  'p-1.5 rounded border border-zinc-500/10 text-xs transition-all duration-200',
+                  'flex flex-col items-center gap-0.5 hover:scale-105 min-h-[50px]',
+                  settings.defaultPrompt === mode.prompt
+                    ? effectiveTheme === 'dark'
+                      ? 'bg-blue-600/20 border-blue-500/50 text-blue-300'
+                      : 'bg-blue-500/20 border-blue-400/50 text-blue-700'
+                    : effectiveTheme === 'dark'
+                      ? 'bg-white/5 text-white/70 hover:bg-white/10'
+                      : 'bg-white/20 text-zinc-600 hover:bg-white/40'
+                )}
+              >
+                <span className="text-xs">{mode.icon}</span>
+                <span className="font-medium text-[10px] leading-tight">{mode.name}</span>
+              </button>
+            ))}
+          </div>
+          <div
+            className={cn(
+              'p-3 rounded border border-zinc-500/10 text-xs',
+              effectiveTheme === 'dark' ? 'bg-white/5 text-white/70' : 'bg-white/30 text-zinc-600'
+            )}
+          >
+            <div className="font-medium mb-1 text-xs">Current Mode:</div>
+            <div className="text-xs leading-relaxed">{settings.defaultPrompt}</div>
           </div>
         </div>
 
