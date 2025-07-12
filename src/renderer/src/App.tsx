@@ -120,8 +120,6 @@ function App() {
     console.log('Screenshot analysis called')
     console.log('Image data available:', !!imageData)
     console.log('AI Service available:', !!aiService)
-    console.log('Current config API key:', config.apiKey)
-    console.log('Current config:', config)
 
     // Check if we have a valid API key in config even if aiService is not ready
     if (!imageData) {
@@ -142,23 +140,23 @@ function App() {
 
       // Use the temp service for this analysis
       setIsLoading(true)
+      setResponse('')
       try {
         const currentTranscription = audioService.getCurrentTranscription()
-        const analysis = await tempAiService.analyzeScreenshot(imageData, currentTranscription)
-        setResponse(analysis)
-
+        await tempAiService.analyzeScreenshotStream(imageData, currentTranscription, (partial) => {
+          console.log('Partial:', partial)
+          setResponse(partial)
+        })
         // Update conversation sessions
         const sessions = tempAiService.getSessionSummaries()
         const currentSession = tempAiService.getCurrentSession()
         setConversationSessions(sessions)
         setCurrentSessionId(currentSession?.id)
-
         // Clear transcription after use
         if (currentTranscription) {
           setTranscription('')
           audioService.clearTranscription()
         }
-
         toast.success('Screenshot analyzed')
       } catch (error) {
         console.error('Error analyzing screenshot:', error)
@@ -170,23 +168,23 @@ function App() {
     }
 
     setIsLoading(true)
+    setResponse('')
     try {
       const currentTranscription = audioService.getCurrentTranscription()
-      const analysis = await aiService.analyzeScreenshot(imageData, currentTranscription)
-      setResponse(analysis)
-
+      await aiService.analyzeScreenshotStream(imageData, currentTranscription, (partial) => {
+        console.log('Partial:', partial)
+        setResponse(partial)
+      })
       // Update conversation sessions
       const sessions = aiService.getSessionSummaries()
       const currentSession = aiService.getCurrentSession()
       setConversationSessions(sessions)
       setCurrentSessionId(currentSession?.id)
-
       // Clear transcription after use
       if (currentTranscription) {
         setTranscription('')
         audioService.clearTranscription()
       }
-
       toast.success('Screenshot analyzed')
     } catch (error) {
       console.error('Error analyzing screenshot:', error)
@@ -203,18 +201,18 @@ function App() {
       }
       return
     }
-
     setIsLoading(true)
+    setResponse('')
     try {
-      const answer = await aiService.askQuestion(question)
-      setResponse(answer)
-
+      await aiService.askQuestionStream(question, (partial) => {
+        console.log('Partial:', partial)
+        setResponse(partial)
+      })
       // Update conversation sessions
       const sessions = aiService.getSessionSummaries()
       const currentSession = aiService.getCurrentSession()
       setConversationSessions(sessions)
       setCurrentSessionId(currentSession?.id)
-
       toast.success('Question answered')
     } catch (error) {
       console.error('Error asking question:', error)

@@ -200,6 +200,117 @@ Guidelines:
     }
   }
 
+  /**
+   * Stream AI response for a question, calling onToken with each new chunk.
+   */
+  async askQuestionStream(question: string, onToken: (partial: string) => void): Promise<void> {
+    if (!this.currentSession) {
+      this.createNewSession()
+    }
+    if (!this.currentSession) {
+      throw new Error('Failed to create session')
+    }
+    // Build messages array: system/history + new human message
+    const messages = [...this.currentSession.messages, new HumanMessage(question)]
+    let fullResponse = ''
+    let hadFirstToken = false
+    const stream = await this.model.stream(messages)
+    console.log('[AIService] Streaming started (askQuestionStream)')
+    try {
+      for await (const chunk of stream) {
+        console.log('[AIService] Chunk:', chunk)
+        if (chunk?.content) {
+          fullResponse += chunk.content
+          onToken(fullResponse)
+          hadFirstToken = true
+        }
+      }
+      console.log('[AIService] Streaming ended (askQuestionStream)')
+    } catch (err) {
+      console.error('[AIService] Streaming error (askQuestionStream):', err)
+      if (!hadFirstToken) throw err
+    }
+    // Add to conversation history
+    const userMessage = new HumanMessage(question)
+    const aiMessage = new AIMessage(fullResponse)
+    if (this.currentSession.messages.length === 1) {
+      this.currentSession.title = this.generateSessionTitle(question)
+    }
+    this.currentSession.messages.push(userMessage, aiMessage)
+    this.currentSession.lastModified = new Date()
+    if (this.currentSession.messages.length > 21) {
+      const systemMsg = this.currentSession.messages[0]
+      this.currentSession.messages = [systemMsg, ...this.currentSession.messages.slice(-20)]
+    }
+    this.saveCurrentSession()
+  }
+
+  /**
+   * Stream AI response for screenshot analysis, calling onToken with each new chunk.
+   */
+  async analyzeScreenshotStream(
+    imageData: string,
+    transcription: string | undefined,
+    onToken: (partial: string) => void
+  ): Promise<void> {
+    if (!this.currentSession) {
+      this.createNewSession()
+    }
+    if (!this.currentSession) {
+      throw new Error('Failed to create session')
+    }
+    // Build messages array: history + new human message with image and text
+    const humanMsg = new HumanMessage({
+      content: [
+        {
+          type: 'text',
+          text: `Analyze this screenshot and provide helpful insights. ${
+            transcription ? `Also consider this audio transcription: "${transcription}"` : ''
+          }`
+        },
+        {
+          type: 'image_url',
+          image_url: {
+            url: imageData
+          }
+        }
+      ]
+    })
+    const messages = [...this.currentSession.messages, humanMsg]
+    let fullResponse = ''
+    let hadFirstToken = false
+    const stream = await this.model.stream(messages)
+    console.log('[AIService] Streaming started (analyzeScreenshotStream)')
+    try {
+      for await (const chunk of stream) {
+        console.log('[AIService] Chunk:', chunk)
+        if (chunk?.content) {
+          fullResponse += chunk.content
+          onToken(fullResponse)
+          hadFirstToken = true
+        }
+      }
+      console.log('[AIService] Streaming ended (analyzeScreenshotStream)')
+    } catch (err) {
+      console.error('[AIService] Streaming error (analyzeScreenshotStream):', err)
+      if (!hadFirstToken) throw err
+    }
+    const userMessage = new HumanMessage(
+      `Screenshot analysis request${transcription ? ` with transcription: "${transcription}"` : ''}`
+    )
+    const aiMessage = new AIMessage(fullResponse)
+    if (this.currentSession.messages.length === 1) {
+      this.currentSession.title = this.generateSessionTitle(userMessage.content as string)
+    }
+    this.currentSession.messages.push(userMessage, aiMessage)
+    this.currentSession.lastModified = new Date()
+    if (this.currentSession.messages.length > 21) {
+      const systemMsg = this.currentSession.messages[0]
+      this.currentSession.messages = [systemMsg, ...this.currentSession.messages.slice(-20)]
+    }
+    this.saveCurrentSession()
+  }
+
   clearHistory(): void {
     if (this.currentSession) {
       this.currentSession.messages = [this.createSystemMessage()]
