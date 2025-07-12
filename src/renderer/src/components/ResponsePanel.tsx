@@ -59,6 +59,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
         'acrylic-panel',
         'flex flex-col',
         'rounded-lg panel-transition relative z-10',
+        isLoading && 'streaming',
         className
       )}
       style={{
@@ -66,7 +67,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
         minHeight: isMinimized ? '60px' : '120px',
         maxHeight: isMinimized ? undefined : '600px',
         overflow: isMinimized ? undefined : 'hidden',
-        transition: 'height 0.3s ease-in-out'
+        transition: 'height 0.3s ease-in-out, backdrop-filter 0.6s ease-out'
       }}
       onMouseEnter={() => window.electronAPI.setClickThrough(false)}
       onMouseLeave={() => window.electronAPI.setClickThrough(true)}
@@ -187,7 +188,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
           <div
             ref={contentRef}
             className={cn(
-              'prose prose-sm max-w-none',
+              'streaming-container prose prose-sm max-w-none',
               effectiveTheme === 'dark' ? 'prose-invert' : 'prose-gray',
               'response-scroll-area'
             )}
@@ -209,7 +210,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                 </div>
               </div>
             ) : response ? (
-              <div>
+              <div className="streaming-text">
                 {isLoading && (
                   <div className="flex items-center gap-2 mb-2">
                     <div
@@ -228,8 +229,9 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                 <div
                   ref={contentRef}
                   className={cn(
-                    'prose prose-sm max-w-none',
-                    effectiveTheme === 'dark' ? 'prose-invert' : 'prose-gray'
+                    'prose prose-sm max-w-none response-content',
+                    effectiveTheme === 'dark' ? 'prose-invert' : 'prose-gray',
+                    response && !isLoading && 'appearing'
                   )}
                 >
                   <ReactMarkdown

@@ -52,6 +52,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         'acrylic-panel',
         'rounded-lg py-3 px-4 panel-transition',
         'relative z-10',
+        isRecording && 'streaming',
         className
       )}
       onMouseEnter={() => window.electronAPI.setClickThrough(false)}
