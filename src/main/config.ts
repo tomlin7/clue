@@ -34,7 +34,8 @@ Identify:
 • Potential distractions to ignore
 • Priority tasks or deadlines
 • Key information I shouldn't miss`,
-    category: 'productivity'
+    category: 'productivity',
+    isCustom: true
   },
   {
     id: 'explain',
@@ -48,7 +49,8 @@ Break down:
 • What each section or feature is for
 • Common workflows and processes
 • Tips for getting things done faster`,
-    category: 'help'
+    category: 'help',
+    isCustom: true
   },
   {
     id: 'suggest',
@@ -62,7 +64,8 @@ Recommend:
 • Missing features that would help
 • Alternative approaches or tools
 • Workflow optimizations I could implement`,
-    category: 'improvement'
+    category: 'improvement',
+    isCustom: true
   },
   {
     id: 'help',
@@ -76,7 +79,8 @@ Assist with:
 • Explaining error messages or warnings
 • Finding specific features or settings
 • Recovering from problems or mistakes`,
-    category: 'support'
+    category: 'support',
+    isCustom: true
   },
   {
     id: 'note',
@@ -90,7 +94,8 @@ Generate:
 • Important details worth remembering
 • Meeting notes or discussion points
 • Reference documentation for later use`,
-    category: 'productivity'
+    category: 'productivity',
+    isCustom: true
   },
   {
     id: 'interview',
@@ -104,7 +109,8 @@ Support with:
 • Summarizing conversation points
 • Suggesting follow-up questions
 • Tracking important responses and insights`,
-    category: 'communication'
+    category: 'communication',
+    isCustom: true
   },
   {
     id: 'learn',
@@ -118,7 +124,8 @@ Explain:
 • Best practices and common patterns
 • Learning resources and next steps
 • Practical exercises to try`,
-    category: 'education'
+    category: 'education',
+    isCustom: true
   },
   {
     id: 'quick',
@@ -132,7 +139,8 @@ Provide:
 • Most important thing to focus on right now
 • Quick win or easy improvement
 • Fast solution to any obvious problem`,
-    category: 'efficiency'
+    category: 'efficiency',
+    isCustom: true
   },
   {
     id: 'design',
@@ -146,7 +154,8 @@ Evaluate:
 • Accessibility and readability
 • Brand consistency and style
 • Suggestions for visual improvements`,
-    category: 'design'
+    category: 'design',
+    isCustom: true
   },
   {
     id: 'debug',
@@ -160,7 +169,8 @@ Look for:
 • Code problems or implementation issues
 • Configuration or setup problems
 • Missing dependencies or resources`,
-    category: 'technical'
+    category: 'technical',
+    isCustom: true
   }
 ]
 
@@ -184,6 +194,11 @@ class ConfigManager {
     const userDataPath = app.getPath('userData')
     this.configPath = path.join(userDataPath, 'config.json')
     this.config = this.loadConfig()
+
+    // Ensure config file exists on disk immediately
+    if (!fs.existsSync(this.configPath)) {
+      this.actualSave()
+    }
   }
 
   private loadConfig(): AppConfig {
@@ -192,11 +207,11 @@ class ConfigManager {
         const configData = fs.readFileSync(this.configPath, 'utf-8')
         const parsed = JSON.parse(configData)
 
-        // Merge with defaults to ensure all properties exist
+        // Merge with defaults to ensure all properties exist, but keep all modes as custom
         const merged = {
           ...defaultConfig,
           ...parsed,
-          modes: [...defaultModes, ...(parsed.customModes || [])]
+          modes: parsed.modes || defaultModes // Use modes from file, or default modes on first run
         }
 
         return merged
@@ -205,6 +220,7 @@ class ConfigManager {
       console.error('Failed to load config:', error)
     }
 
+    // First time - return default config with all modes marked as custom
     return { ...defaultConfig }
   }
 
@@ -226,14 +242,9 @@ class ConfigManager {
 
   private actualSave(): void {
     try {
-      // Separate default and custom modes for storage
-      const defaultModeIds = defaultModes.map((m) => m.id)
-      const customModes = this.config.modes.filter((m) => !defaultModeIds.includes(m.id))
-
+      // Save all modes since they're all custom now
       const configToSave = {
-        ...this.config,
-        customModes,
-        modes: undefined // Don't save default modes
+        ...this.config
       }
 
       fs.writeFileSync(this.configPath, JSON.stringify(configToSave, null, 2))
@@ -285,16 +296,13 @@ class ConfigManager {
   }
 
   deleteMode(id: string): void {
-    // Don't allow deletion of default modes
-    const defaultModeIds = defaultModes.map((m) => m.id)
-    if (!defaultModeIds.includes(id)) {
-      this.config.modes = this.config.modes.filter((m) => m.id !== id)
-      // If deleted mode was selected, switch to focus mode
-      if (this.config.selectedModeId === id) {
-        this.config.selectedModeId = 'focus'
-      }
-      this.saveConfig()
+    // Allow deletion of any mode since they're all custom now
+    this.config.modes = this.config.modes.filter((m) => m.id !== id)
+    // If deleted mode was selected, switch to focus mode (or first available mode)
+    if (this.config.selectedModeId === id) {
+      this.config.selectedModeId = this.config.modes.length > 0 ? this.config.modes[0].id : 'focus'
     }
+    this.saveConfig()
   }
 
   getSelectedMode(): AIMode | undefined {
@@ -346,6 +354,11 @@ class ConfigManager {
   }
 
   openConfigFile(): void {
+    // Ensure config file exists before opening
+    if (!fs.existsSync(this.configPath)) {
+      this.actualSave()
+    }
+
     const { shell } = require('electron')
     shell.openPath(this.configPath)
   }

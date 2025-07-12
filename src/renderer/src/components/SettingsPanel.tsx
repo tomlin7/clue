@@ -5,7 +5,7 @@ import { Slider } from '@/components/ui/slider'
 import { useConfig } from '@/contexts/ConfigContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
-import { ExternalLink, FileText, Moon, Palette, RotateCcw, Sun, X } from 'lucide-react'
+import { ExternalLink, FileText, Moon, Palette, Plus, RotateCcw, Sun, X } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SettingsPanelProps {
@@ -270,6 +270,22 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 <span className="font-medium text-[10px] leading-tight">{mode.name}</span>
               </button>
             ))}
+            {/* Add Mode Button */}
+            <button
+              onClick={() => window.electronAPI.config.openConfigFile()}
+              className={cn(
+                'p-1.5 rounded border border-zinc-500/10 text-xs transition-all duration-200',
+                'flex flex-col items-center justify-center gap-0.5 hover:scale-105 min-h-[50px]',
+                'border-dashed',
+                effectiveTheme === 'dark'
+                  ? 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 border-dashed border-2 border-white/50'
+                  : 'bg-white/10 text-zinc-400 hover:bg-white/30 hover:text-zinc-500 border-dashed border-2 border-zinc-500'
+              )}
+              title="Edit modes in config file"
+            >
+              <Plus size={15} />
+              <span className="font-medium text-[10px] leading-tight">Custom</span>
+            </button>
           </div>
           <div
             className={cn(
