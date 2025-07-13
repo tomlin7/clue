@@ -53,7 +53,7 @@ export function useInterviewMode() {
     try {
       console.log('Setting up audio capture...')
 
-      // Request display media with system audio (same as cheating-daddy)
+      // Request display media with system audio
       console.log('🎤 Requesting display media with system audio...')
       console.log('📢 IMPORTANT: Please select "Share system audio" in the popup!')
 
@@ -84,7 +84,7 @@ export function useInterviewMode() {
 
       mediaStreamRef.current = displayStream
 
-      // Setup audio processing exactly like cheating-daddy
+      // Setup audio processing exactly
       const audioContext = new AudioContext({ sampleRate: 24000 })
       const source = audioContext.createMediaStreamSource(displayStream)
       const processor = audioContext.createScriptProcessor(4096, 1, 1)
@@ -119,14 +119,14 @@ export function useInterviewMode() {
         while (audioBuffer.length >= samplesPerChunk) {
           const chunk = audioBuffer.splice(0, samplesPerChunk)
 
-          // Convert Float32 to Int16 (same as cheating-daddy)
+          // Convert Float32 to Int16
           const int16Array = new Int16Array(chunk.length)
           for (let i = 0; i < chunk.length; i++) {
             const s = Math.max(-1, Math.min(1, chunk[i]))
             int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7fff
           }
 
-          // Convert to base64 (same as cheating-daddy)
+          // Convert to base64
           let binary = ''
           const bytes = new Uint8Array(int16Array.buffer)
           const len = bytes.byteLength
@@ -147,7 +147,7 @@ export function useInterviewMode() {
       audioContextRef.current = audioContext
       audioProcessorRef.current = processor
 
-      console.log('Audio capture setup complete (cheating-daddy style)')
+      console.log('Audio capture setup complete')
     } catch (error) {
       console.error('Error setting up audio capture:', error)
       setState((prev) => ({ ...prev, error: `Audio setup failed: ${error}` }))

@@ -126,17 +126,10 @@ function registerGlobalShortcuts(): void {
     }
   })
 
-  // Toggle microphone (Ctrl+M)
-  globalShortcut.register('CommandOrControl+M', () => {
-    if (isVisible && mainWindow) {
-      mainWindow.webContents.send('toggle-microphone')
-    }
-  })
-
-  // Toggle system audio capture (Ctrl+A) - works even when window is hidden
-  globalShortcut.register('CommandOrControl+A', () => {
+  // Toggle interview mode (Ctrl+])
+  globalShortcut.register('CommandOrControl+]', () => {
     if (mainWindow) {
-      mainWindow.webContents.send('toggle-system-audio')
+      mainWindow.webContents.send('toggle-interview-mode')
     }
   })
 
