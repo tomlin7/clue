@@ -9,6 +9,15 @@ export interface AIMode {
   isCustom?: boolean
 }
 
+export interface InterviewModeConfig {
+  enabled: boolean
+  screenshotInterval: number
+  screenshotQuality: 'low' | 'medium' | 'high'
+  autoAnalyze: boolean
+  customPrompt: string
+  language: string
+}
+
 export interface AppConfig {
   opacity: number
   aiModel: string
@@ -17,6 +26,7 @@ export interface AppConfig {
   selectedModeId: string
   modes: AIMode[]
   apiKey: string
+  interviewMode: InterviewModeConfig
 }
 
 export interface ElectronAPI {
@@ -28,6 +38,16 @@ export interface ElectronAPI {
   audio: {
     sendData: (audioData: string) => Promise<{ success: boolean; error?: string }>
   }
+
+  // Screen capture
+  captureScreen: (quality: 'low' | 'medium' | 'high') => Promise<string>
+
+  // Live AI Session
+  saveConversationTurn: (data: {
+    sessionId: string
+    turn: { timestamp: number; transcription: string; ai_response: string }
+    fullHistory: Array<{ timestamp: number; transcription: string; ai_response: string }>
+  }) => Promise<void>
 
   // Config management
   config: {
@@ -71,6 +91,13 @@ const electronAPI: ElectronAPI = {
   audio: {
     sendData: (audioData: string) => ipcRenderer.invoke('audio:send-data', audioData)
   },
+
+  // Screen capture
+  captureScreen: (quality: 'low' | 'medium' | 'high') =>
+    ipcRenderer.invoke('capture-screen', quality),
+
+  // Live AI Session
+  saveConversationTurn: (data) => ipcRenderer.invoke('save-conversation-turn', data),
 
   // Config management
   config: {

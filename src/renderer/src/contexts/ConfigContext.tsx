@@ -9,6 +9,15 @@ export interface AIMode {
   isCustom?: boolean
 }
 
+export interface InterviewModeConfig {
+  enabled: boolean
+  screenshotInterval: number
+  screenshotQuality: 'low' | 'medium' | 'high'
+  autoAnalyze: boolean
+  customPrompt: string
+  language: string
+}
+
 export interface AppConfig {
   aiModel: string
   apiKey: string
@@ -17,6 +26,7 @@ export interface AppConfig {
   selectedModeId: string
   modes: AIMode[]
   position: { x: number; y: number }
+  interviewMode: InterviewModeConfig
 }
 
 interface ConfigContextType {

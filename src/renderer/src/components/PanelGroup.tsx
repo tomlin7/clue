@@ -21,6 +21,11 @@ interface PanelGroupProps {
   currentSessionId?: string
   position: { x: number; y: number }
   onPositionChange: (position: { x: number; y: number }) => void
+  // Interview mode props
+  interviewModeStatus?: string
+  interviewModeTranscription?: string
+  interviewModeResponse?: string
+  isInterviewModeEnabled?: boolean
 }
 
 export const PanelGroup: React.FC<PanelGroupProps> = ({
@@ -39,7 +44,11 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
   conversationSessions = [],
   currentSessionId,
   position,
-  onPositionChange
+  onPositionChange,
+  interviewModeStatus,
+  interviewModeTranscription,
+  interviewModeResponse,
+  isInterviewModeEnabled
 }) => {
   const [screenSize, setScreenSize] = useState({ width: 1920, height: 1080 })
   const [isHistoryVisible, setIsHistoryVisible] = useState(false)
@@ -122,6 +131,10 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
           onToggleHistory={() => setIsHistoryVisible(!isHistoryVisible)}
           isHistoryVisible={isHistoryVisible}
           className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300"
+          interviewModeStatus={interviewModeStatus}
+          interviewModeTranscription={interviewModeTranscription}
+          interviewModeResponse={interviewModeResponse}
+          isInterviewModeEnabled={isInterviewModeEnabled}
         />
 
         {/* Show conversation history when visible */}
