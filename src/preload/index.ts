@@ -24,6 +24,11 @@ export interface ElectronAPI {
   setClickThrough: (enabled: boolean) => Promise<void>
   getScreenSize: () => Promise<{ width: number; height: number }>
 
+  // Audio management
+  audio: {
+    sendData: (audioData: string) => Promise<{ success: boolean; error?: string }>
+  }
+
   // Config management
   config: {
     get: () => Promise<AppConfig>
@@ -48,8 +53,10 @@ export interface ElectronAPI {
   // Event listeners
   onToggleVisibility: (callback: (event: IpcRendererEvent, visible: boolean) => void) => void
   onToggleMicrophone: (callback: (event: IpcRendererEvent) => void) => void
+  onToggleSystemAudio: (callback: (event: IpcRendererEvent) => void) => void
   onMovePanels: (callback: (event: IpcRendererEvent, direction: string) => void) => void
   onScreenshotCaptured: (callback: (event: IpcRendererEvent, imageData: string) => void) => void
+  onAudioDataReceived: (callback: (event: IpcRendererEvent, audioData: string) => void) => void
 
   // Remove listeners
   removeAllListeners: (channel: string) => void
@@ -59,6 +66,11 @@ const electronAPI: ElectronAPI = {
   // Window management
   setClickThrough: (enabled: boolean) => ipcRenderer.invoke('set-click-through', enabled),
   getScreenSize: () => ipcRenderer.invoke('get-screen-size'),
+
+  // Audio management
+  audio: {
+    sendData: (audioData: string) => ipcRenderer.invoke('audio:send-data', audioData)
+  },
 
   // Config management
   config: {
@@ -86,8 +98,10 @@ const electronAPI: ElectronAPI = {
   // Event listeners
   onToggleVisibility: (callback) => ipcRenderer.on('toggle-visibility', callback),
   onToggleMicrophone: (callback) => ipcRenderer.on('toggle-microphone', callback),
+  onToggleSystemAudio: (callback) => ipcRenderer.on('toggle-system-audio', callback),
   onMovePanels: (callback) => ipcRenderer.on('move-panels', callback),
   onScreenshotCaptured: (callback) => ipcRenderer.on('screenshot-captured', callback),
+  onAudioDataReceived: (callback) => ipcRenderer.on('audio-data-received', callback),
 
   // Remove listeners
   removeAllListeners: (channel: string) => ipcRenderer.removeAllListeners(channel)
