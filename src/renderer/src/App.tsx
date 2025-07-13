@@ -18,7 +18,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
   const [isRecording, setIsRecording] = useState(false)
-  const [transcription, setTranscription] = useState('')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [conversationSessions, setConversationSessions] = useState<ConversationSummary[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>()
@@ -110,22 +109,13 @@ function App() {
         setIsRecording(false)
         toast.success('System audio capture stopped')
       } else {
-        // Set up audio data callback to send to AI service
-        audioService.setAudioDataCallback(async (audioData) => {
-          try {
-            const result = await audioService.sendAudioData(audioData)
-            if (!result.success) {
-              console.error('Failed to send audio data:', result.error)
-            }
-          } catch (error) {
-            console.error('Error sending audio data:', error)
-          }
-        })
+        // NO AI PROCESSING - Just capture system audio for now
+        // Remove the callback that was sending data to AI service
+        audioService.setAudioDataCallback(null)
 
         await audioService.startSystemAudioCapture()
         setIsRecording(true)
-        setTranscription('') // Clear any previous transcription
-        toast.success('System audio capture started')
+        toast.success('System audio capture started (no AI processing)')
       }
     } catch (error) {
       console.error('Error toggling system audio capture:', error)
@@ -154,7 +144,7 @@ function App() {
       setResponse('')
       try {
         // No transcription needed for system audio capture
-        await tempAiService.analyzeScreenshotStream(imageData, '', (partial) => {
+        await tempAiService.analyzeScreenshotStream(imageData, (partial) => {
           setResponse(partial)
         })
         // Update conversation sessions
@@ -176,7 +166,7 @@ function App() {
     setResponse('')
     try {
       // No transcription needed for system audio capture
-      await aiService.analyzeScreenshotStream(imageData, '', (partial) => {
+      await aiService.analyzeScreenshotStream(imageData, (partial) => {
         setResponse(partial)
       })
       // Update conversation sessions
@@ -310,7 +300,6 @@ function App() {
             onDeleteSession={handleDeleteSession}
             isRecording={isRecording}
             onToggleRecording={handleToggleRecording}
-            transcription={transcription}
             isVisible={isVisible}
             onOpenSettings={handleToggleSettings}
             isSettingsOpen={isSettingsOpen}

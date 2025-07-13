@@ -74,7 +74,7 @@ export class AIService {
     return null
   }
 
-  async analyzeScreenshot(imageData: string, transcription?: string): Promise<string> {
+  async analyzeScreenshot(imageData: string): Promise<string> {
     try {
       // Ensure we have a current session
       if (!this.currentSession) {
@@ -93,7 +93,7 @@ export class AIService {
           [
             {
               type: 'text',
-              text: `Analyze the screen first. ${transcription ? `Also: "${transcription}"` : ''}`
+              text: 'Analyze the screen first.'
             },
             {
               type: 'image_url',
@@ -111,9 +111,7 @@ export class AIService {
         history: this.currentSession.messages
       })
 
-      const userMessage = new HumanMessage(
-        transcription ? `Screenshot with audio: "${transcription}"` : 'Screenshot'
-      )
+      const userMessage = new HumanMessage('Screenshot')
       const aiMessage = new AIMessage(response.content as string)
 
       // Update session title if this is the first non-system message
@@ -240,7 +238,6 @@ export class AIService {
    */
   async analyzeScreenshotStream(
     imageData: string,
-    transcription: string | undefined,
     onToken: (partial: string) => void
   ): Promise<void> {
     if (!this.currentSession) {
@@ -254,7 +251,7 @@ export class AIService {
       content: [
         {
           type: 'text',
-          text: `Analyze the screen first. ${transcription ? `Also: "${transcription}"` : ''}`
+          text: 'Analyze the screen first.'
         },
         {
           type: 'image_url',
@@ -280,9 +277,7 @@ export class AIService {
       console.error('[AIService] Streaming error (analyzeScreenshotStream):', err)
       if (!hadFirstToken) throw err
     }
-    const userMessage = new HumanMessage(
-      transcription ? `Screenshot with audio: "${transcription}"` : 'Screenshot'
-    )
+    const userMessage = new HumanMessage('Screenshot')
     const aiMessage = new AIMessage(fullResponse)
     if (this.currentSession.messages.length === 1) {
       this.currentSession.title = this.generateSessionTitle(userMessage.content as string)

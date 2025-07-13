@@ -1,20 +1,10 @@
-import { BrowserWindow, ipcMain, IpcMainInvokeEvent } from 'electron'
-
-/**
- * Send audio data to renderer process
- */
-function sendAudioDataToRenderer(audioData: string): void {
-  const windows = BrowserWindow.getAllWindows()
-  if (windows.length > 0) {
-    windows[0].webContents.send('audio-data-received', audioData)
-  }
-}
+import { ipcMain, IpcMainInvokeEvent } from 'electron'
 
 /**
  * Setup IPC handlers for audio capture
  */
 export function setupAudioIpcHandlers(): void {
-  // Send audio data to AI service
+  // Send audio data to AI service - DISABLED FOR NOW
   ipcMain.handle(
     'audio:send-data',
     async (
@@ -22,18 +12,16 @@ export function setupAudioIpcHandlers(): void {
       audioData: string
     ): Promise<{ success: boolean; error?: string }> => {
       try {
-        // Here you would integrate with your AI service
-        // For now, we'll just log that we received the data
-        console.log('Received audio data:', audioData.length, 'characters')
+        // DISABLED: No AI processing for now, just log that we received data
+        console.log('Received audio data (AI processing disabled):', audioData.length, 'characters')
 
-        // Also send to renderer process for real-time processing
-        sendAudioDataToRenderer(audioData)
+        // DISABLED: Don't send to renderer or AI service
+        // sendAudioDataToRenderer(audioData)
+        // TODO: Send to AI service (Gemini, etc.) - DISABLED
 
-        // TODO: Send to AI service (Gemini, etc.)
-
-        return { success: true }
+        return { success: true, error: 'AI processing disabled' }
       } catch (error) {
-        console.error('Error sending audio data:', error)
+        console.error('Error in audio handler:', error)
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         return { success: false, error: errorMessage }
       }

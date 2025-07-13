@@ -9,7 +9,6 @@ interface ControlPanelProps {
   onAskQuestion: (question: string) => void
   isRecording: boolean
   onToggleRecording: () => void
-  transcription: string
   onOpenSettings: () => void
   isSettingsOpen?: boolean
   className?: string
@@ -20,7 +19,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onAskQuestion,
   isRecording,
   onToggleRecording,
-  transcription,
   onOpenSettings,
   isSettingsOpen = false,
   className
@@ -210,26 +208,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           Ask
         </Button>
       </form> */}
-
-      {transcription && (
-        <div
-          className={cn(
-            'mt-3 p-2 rounded-lg border relative z-20',
-            effectiveTheme === 'dark'
-              ? 'bg-green-500/20 border-green-500/30'
-              : 'bg-green-100/80 border-green-300/50'
-          )}
-        >
-          <p
-            className={cn(
-              'text-sm',
-              effectiveTheme === 'dark' ? 'text-green-100' : 'text-green-800'
-            )}
-          >
-            <strong>Transcription:</strong> {transcription}
-          </p>
-        </div>
-      )}
     </div>
   )
 }
