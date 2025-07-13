@@ -304,7 +304,7 @@ Please respond in a conversational, helpful manner as if you're assisting someon
     try {
       console.log('🎵 Sending audio data, size:', audioData.length, 'mimeType:', mimeType)
 
-      // Send audio exactly like cheating-daddy does
+      // Send audio
       await this.session.sendRealtimeInput({
         audio: {
           data: audioData,
@@ -328,7 +328,7 @@ Please respond in a conversational, helpful manner as if you're assisting someon
     try {
       console.log('📸 Sending screenshot, size:', imageData.length)
 
-      // Send image exactly like cheating-daddy does
+      // Send image
       await this.session.sendRealtimeInput({
         media: {
           data: imageData,

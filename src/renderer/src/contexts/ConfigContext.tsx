@@ -10,7 +10,6 @@ export interface AIMode {
 }
 
 export interface InterviewModeConfig {
-  enabled: boolean
   screenshotInterval: number
   screenshotQuality: 'low' | 'medium' | 'high'
   autoAnalyze: boolean

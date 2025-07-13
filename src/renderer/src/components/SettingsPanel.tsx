@@ -463,7 +463,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                     : 'bg-white/30 text-zinc-600'
                 )}
               >
-                Ctrl+M
+                Ctrl+]
               </Badge>
             </div>
             <div className="flex justify-between">

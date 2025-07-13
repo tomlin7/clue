@@ -78,13 +78,8 @@ function App() {
         }
       })
 
-      // Handle microphone toggle
-      window.electronAPI.onToggleMicrophone(() => {
-        handleToggleRecording()
-      })
-
-      // Handle system audio toggle (works even when window is hidden)
-      window.electronAPI.onToggleSystemAudio(() => {
+      // Handle interview mode toggle (Ctrl+])
+      window.electronAPI.onToggleInterviewMode(() => {
         handleToggleRecording()
       })
 
@@ -98,8 +93,7 @@ function App() {
 
     return () => {
       window.electronAPI.removeAllListeners('toggle-visibility')
-      window.electronAPI.removeAllListeners('toggle-microphone')
-      window.electronAPI.removeAllListeners('toggle-system-audio')
+      window.electronAPI.removeAllListeners('toggle-interview-mode')
       window.electronAPI.removeAllListeners('screenshot-captured')
     }
   }, [isRecording, aiService])
@@ -293,13 +287,6 @@ function App() {
   const handleOnboardingComplete = () => {
     setShowOnboarding(false)
   }
-
-  // Sync recording state with interview mode
-  useEffect(() => {
-    if (config.interviewMode?.enabled) {
-      setIsRecording(interviewMode.state.isActive)
-    }
-  }, [config.interviewMode?.enabled, interviewMode.state.isActive])
 
   // Show interview mode errors as toasts
   useEffect(() => {

@@ -10,7 +10,6 @@ export interface AIMode {
 }
 
 export interface InterviewModeConfig {
-  enabled: boolean
   screenshotInterval: number
   screenshotQuality: 'low' | 'medium' | 'high'
   autoAnalyze: boolean
@@ -72,8 +71,7 @@ export interface ElectronAPI {
 
   // Event listeners
   onToggleVisibility: (callback: (event: IpcRendererEvent, visible: boolean) => void) => void
-  onToggleMicrophone: (callback: (event: IpcRendererEvent) => void) => void
-  onToggleSystemAudio: (callback: (event: IpcRendererEvent) => void) => void
+  onToggleInterviewMode: (callback: (event: IpcRendererEvent) => void) => void
   onMovePanels: (callback: (event: IpcRendererEvent, direction: string) => void) => void
   onScreenshotCaptured: (callback: (event: IpcRendererEvent, imageData: string) => void) => void
   onAudioDataReceived: (callback: (event: IpcRendererEvent, audioData: string) => void) => void
@@ -124,8 +122,7 @@ const electronAPI: ElectronAPI = {
 
   // Event listeners
   onToggleVisibility: (callback) => ipcRenderer.on('toggle-visibility', callback),
-  onToggleMicrophone: (callback) => ipcRenderer.on('toggle-microphone', callback),
-  onToggleSystemAudio: (callback) => ipcRenderer.on('toggle-system-audio', callback),
+  onToggleInterviewMode: (callback) => ipcRenderer.on('toggle-interview-mode', callback),
   onMovePanels: (callback) => ipcRenderer.on('move-panels', callback),
   onScreenshotCaptured: (callback) => ipcRenderer.on('screenshot-captured', callback),
   onAudioDataReceived: (callback) => ipcRenderer.on('audio-data-received', callback),
