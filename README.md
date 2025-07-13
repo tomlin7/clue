@@ -2,7 +2,10 @@
 
 Clue is a cool overlay to make life easier.
 
-![image](.github/res/screenshot.png)
+
+https://github.com/user-attachments/assets/27a90636-a1a5-4993-bfdb-0ebf08e0a7d7
+
+
 
 - Not detectable by Zoom, Meet, Teams.
 - JSON Config:
