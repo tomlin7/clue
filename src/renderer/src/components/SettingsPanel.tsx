@@ -436,7 +436,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
             </div>
             <div className="flex justify-between">
               <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-gray-600')}>
-                Capture Screen
+                Take Screenshot
               </span>
               <Badge
                 variant="secondary"
@@ -452,7 +452,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
             </div>
             <div className="flex justify-between">
               <span className={cn(effectiveTheme === 'dark' ? 'text-white/70' : 'text-gray-600')}>
-                Toggle Microphone
+                Toggle Interview Mode
               </span>
               <Badge
                 variant="secondary"
@@ -498,6 +498,162 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 Ctrl+Q
               </Badge>
             </div>
+          </div>
+        </div>
+
+        {/* Interview Mode Settings */}
+        <div className="space-y-3">
+          <h3
+            className={cn(
+              'text-sm font-medium',
+              effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+            )}
+          >
+            Interview Mode Settings
+          </h3>
+
+          <div
+            className={cn(
+              'p-3 rounded border border-zinc-500/20 bg-blue-500/10 text-xs',
+              effectiveTheme === 'dark' ? 'text-blue-200' : 'text-blue-700'
+            )}
+          >
+            💡 <strong>Interview Mode:</strong> Click the microphone button to start live AI
+            assistance with real-time transcription and responses.
+          </div>
+
+          {/* Screenshot Interval */}
+          <div className="space-y-2">
+            <label
+              className={cn(
+                'text-sm',
+                effectiveTheme === 'dark' ? 'text-white/70' : 'text-zinc-600'
+              )}
+            >
+              Screenshot Interval (seconds)
+            </label>
+            <select
+              value={config.interviewMode?.screenshotInterval || 5}
+              onChange={(e) =>
+                updateConfig({
+                  interviewMode: {
+                    ...config.interviewMode,
+                    screenshotInterval: parseInt(e.target.value)
+                  }
+                })
+              }
+              className={cn(
+                'w-full p-2 rounded border border-zinc-500/10 text-sm',
+                effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
+              )}
+            >
+              <option value={0}>Manual Only</option>
+              <option value={3}>3 seconds</option>
+              <option value={5}>5 seconds</option>
+              <option value={10}>10 seconds</option>
+              <option value={15}>15 seconds</option>
+              <option value={30}>30 seconds</option>
+            </select>
+          </div>
+
+          {/* Screenshot Quality */}
+          <div className="space-y-2">
+            <label
+              className={cn(
+                'text-sm',
+                effectiveTheme === 'dark' ? 'text-white/70' : 'text-zinc-600'
+              )}
+            >
+              Screenshot Quality
+            </label>
+            <select
+              value={config.interviewMode?.screenshotQuality || 'medium'}
+              onChange={(e) =>
+                updateConfig({
+                  interviewMode: {
+                    ...config.interviewMode,
+                    screenshotQuality: e.target.value as 'low' | 'medium' | 'high'
+                  }
+                })
+              }
+              className={cn(
+                'w-full p-2 rounded border border-zinc-500/10 text-sm',
+                effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
+              )}
+            >
+              <option value="low">Low (640x480)</option>
+              <option value="medium">Medium (1280x720)</option>
+              <option value="high">High (1920x1080)</option>
+            </select>
+          </div>
+
+          {/* Language Setting */}
+          <div className="space-y-2">
+            <label
+              className={cn(
+                'text-sm',
+                effectiveTheme === 'dark' ? 'text-white/70' : 'text-zinc-600'
+              )}
+            >
+              Voice Recognition Language
+            </label>
+            <select
+              value={config.interviewMode?.language || 'en-US'}
+              onChange={(e) =>
+                updateConfig({
+                  interviewMode: {
+                    ...config.interviewMode,
+                    language: e.target.value
+                  }
+                })
+              }
+              className={cn(
+                'w-full p-2 rounded border border-zinc-500/10 text-sm',
+                effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/20 text-zinc-800'
+              )}
+            >
+              <option value="en-US">English (US)</option>
+              <option value="en-GB">English (UK)</option>
+              <option value="es-ES">Spanish</option>
+              <option value="fr-FR">French</option>
+              <option value="de-DE">German</option>
+              <option value="it-IT">Italian</option>
+              <option value="pt-BR">Portuguese (Brazil)</option>
+              <option value="zh-CN">Chinese (Simplified)</option>
+              <option value="ja-JP">Japanese</option>
+              <option value="ko-KR">Korean</option>
+            </select>
+          </div>
+
+          {/* Custom Prompt */}
+          <div className="space-y-2">
+            <label
+              className={cn(
+                'text-sm',
+                effectiveTheme === 'dark' ? 'text-white/70' : 'text-zinc-600'
+              )}
+            >
+              Custom Interview Prompt (optional)
+            </label>
+            <textarea
+              value={config.interviewMode?.customPrompt || ''}
+              onChange={(e) =>
+                updateConfig({
+                  interviewMode: {
+                    ...config.interviewMode,
+                    customPrompt: e.target.value
+                  }
+                })
+              }
+              placeholder="Add specific instructions for the AI assistant..."
+              rows={3}
+              className={cn(
+                'w-full p-2 rounded border border-zinc-500/10 text-sm resize-none',
+                effectiveTheme === 'dark'
+                  ? 'bg-white/10 text-white placeholder:text-white/50'
+                  : 'bg-white/20 text-zinc-800 placeholder:text-zinc-500'
+              )}
+            />
           </div>
         </div>
 

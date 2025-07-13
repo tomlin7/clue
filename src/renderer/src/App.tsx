@@ -3,6 +3,7 @@ import { PanelGroup } from '@/components/PanelGroup'
 import { SettingsPanel } from '@/components/SettingsPanel'
 import { Toaster } from '@/components/ui/sonner'
 import { useConfig } from '@/contexts/ConfigContext'
+import { useInterviewMode } from '@/hooks/useInterviewMode'
 import { AIService } from '@/services/aiService'
 import { AudioService } from '@/services/audioService'
 import { ConversationSummary } from '@/types/conversation'
@@ -12,6 +13,7 @@ import './App.css'
 
 function App() {
   const { config, updateConfig } = useConfig()
+  const interviewMode = useInterviewMode()
   const [aiService, setAiService] = useState<AIService | null>(null)
   const [audioService] = useState(() => new AudioService())
   const [response, setResponse] = useState('')
@@ -103,24 +105,34 @@ function App() {
   }, [isRecording, aiService])
 
   const handleToggleRecording = async () => {
+    // Mic button controls the mode:
+    // Recording ON = Interview Mode (live AI)
+    // Recording OFF = Regular Mode
     try {
       if (isRecording) {
-        await audioService.stopSystemAudioCapture()
+        // Stop interview mode if active
+        if (interviewMode.state.isActive) {
+          await interviewMode.stopInterviewMode()
+        } else {
+          // Stop legacy audio capture if active
+          await audioService.stopSystemAudioCapture()
+        }
         setIsRecording(false)
-        toast.success('System audio capture stopped')
+        toast.success('Recording stopped')
       } else {
-        // NO AI PROCESSING - Just capture system audio for now
-        // Remove the callback that was sending data to AI service
-        audioService.setAudioDataCallback(null)
-
-        await audioService.startSystemAudioCapture()
+        // Start interview mode
+        if (!config.apiKey) {
+          toast.error('Please set up your Google API key in settings first')
+          return
+        }
+        await interviewMode.startInterviewMode()
         setIsRecording(true)
-        toast.success('System audio capture started (no AI processing)')
+        toast.success('Interview mode started - Live AI active')
       }
     } catch (error) {
-      console.error('Error toggling system audio capture:', error)
+      console.error('Error toggling recording mode:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      toast.error(`Failed to toggle system audio capture: ${errorMessage}`)
+      toast.error(`Failed to toggle recording: ${errorMessage}`)
     }
   }
 
@@ -282,6 +294,21 @@ function App() {
     setShowOnboarding(false)
   }
 
+  // Sync recording state with interview mode
+  useEffect(() => {
+    if (config.interviewMode?.enabled) {
+      setIsRecording(interviewMode.state.isActive)
+    }
+  }, [config.interviewMode?.enabled, interviewMode.state.isActive])
+
+  // Show interview mode errors as toasts
+  useEffect(() => {
+    if (interviewMode.state.error) {
+      toast.error(interviewMode.state.error)
+      interviewMode.clearError()
+    }
+  }, [interviewMode.state.error, interviewMode.clearError])
+
   return (
     <div className="dark h-screen w-screen bg-transparent overflow-hidden relative select-none">
       {/* Full-screen transparent overlay */}
@@ -307,6 +334,10 @@ function App() {
             currentSessionId={currentSessionId}
             position={config.position}
             onPositionChange={(position) => updateConfig({ position })}
+            interviewModeStatus={interviewMode.state.status}
+            interviewModeTranscription={interviewMode.state.transcription}
+            interviewModeResponse={interviewMode.state.response}
+            isInterviewModeEnabled={isRecording && interviewMode.state.isActive}
           />
 
           {/* Settings Panel - positioned in top right of app */}

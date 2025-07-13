@@ -348,3 +348,85 @@ app.on('before-quit', async () => {
     mainWindow.close()
   }
 })
+
+ipcMain.handle(
+  'capture-screen',
+  async (_event: IpcMainInvokeEvent, quality: 'low' | 'medium' | 'high'): Promise<string> => {
+    try {
+      const sources = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: getScreenshotSize(quality)
+      })
+
+      if (sources.length === 0) {
+        throw new Error('No screen sources available')
+      }
+
+      // Get the primary screen source
+      const primarySource = sources[0]
+      const thumbnail = primarySource.thumbnail
+
+      // Convert to JPEG with appropriate quality
+      const jpegQuality = getJpegQuality(quality)
+      const jpegBuffer = thumbnail.toJPEG(jpegQuality)
+
+      return jpegBuffer.toString('base64')
+    } catch (error) {
+      console.error('Error capturing screen:', error)
+      throw error
+    }
+  }
+)
+
+ipcMain.handle(
+  'save-conversation-turn',
+  async (
+    _event: IpcMainInvokeEvent,
+    data: {
+      sessionId: string
+      turn: { timestamp: number; transcription: string; ai_response: string }
+      fullHistory: Array<{ timestamp: number; transcription: string; ai_response: string }>
+    }
+  ): Promise<void> => {
+    try {
+      // For now, just log the conversation turn
+      // In a full implementation, you might save this to a database or file
+      console.log('Saving conversation turn for session:', data.sessionId)
+      console.log('Turn:', data.turn)
+
+      // Send to renderer for IndexedDB storage if needed
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('save-conversation-turn', data)
+      }
+    } catch (error) {
+      console.error('Error saving conversation turn:', error)
+      throw error
+    }
+  }
+)
+
+function getScreenshotSize(quality: 'low' | 'medium' | 'high'): { width: number; height: number } {
+  switch (quality) {
+    case 'low':
+      return { width: 640, height: 480 }
+    case 'medium':
+      return { width: 1280, height: 720 }
+    case 'high':
+      return { width: 1920, height: 1080 }
+    default:
+      return { width: 1280, height: 720 }
+  }
+}
+
+function getJpegQuality(quality: 'low' | 'medium' | 'high'): number {
+  switch (quality) {
+    case 'low':
+      return 30
+    case 'medium':
+      return 60
+    case 'high':
+      return 80
+    default:
+      return 60
+  }
+}

@@ -11,6 +11,14 @@ export interface AIMode {
   isCustom?: boolean
 }
 
+export interface InterviewModeConfig {
+  screenshotInterval: number // seconds
+  screenshotQuality: 'low' | 'medium' | 'high'
+  autoAnalyze: boolean
+  customPrompt: string
+  language: string
+}
+
 export interface AppConfig {
   opacity: number
   aiModel: string
@@ -19,6 +27,7 @@ export interface AppConfig {
   selectedModeId: string
   modes: AIMode[]
   apiKey: string
+  interviewMode: InterviewModeConfig
 }
 
 const defaultModes: AIMode[] = [
@@ -181,7 +190,14 @@ const defaultConfig: AppConfig = {
   opacity: 100,
   selectedModeId: 'focus',
   modes: defaultModes,
-  position: { x: 100, y: 100 }
+  position: { x: 100, y: 100 },
+  interviewMode: {
+    screenshotInterval: 5,
+    screenshotQuality: 'medium',
+    autoAnalyze: true,
+    customPrompt: '',
+    language: 'en-US'
+  }
 }
 
 class ConfigManager {

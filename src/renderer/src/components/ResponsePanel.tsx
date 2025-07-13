@@ -17,6 +17,11 @@ interface ResponsePanelProps {
   onToggleHistory: () => void
   isHistoryVisible: boolean
   className?: string
+  // Interview mode props
+  interviewModeStatus?: string
+  interviewModeTranscription?: string
+  interviewModeResponse?: string
+  isInterviewModeEnabled?: boolean
 }
 
 export const ResponsePanel: React.FC<ResponsePanelProps> = ({
@@ -26,7 +31,11 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   onNewSession,
   onToggleHistory,
   isHistoryVisible,
-  className
+  className,
+  interviewModeStatus,
+  interviewModeTranscription,
+  interviewModeResponse,
+  isInterviewModeEnabled
 }) => {
   const [isMinimized, setIsMinimized] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -35,14 +44,18 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   // Removed all contentHeight and resizing logic
 
   const handleCopy = async () => {
-    if (response) {
+    const textToCopy =
+      isInterviewModeEnabled && interviewModeResponse ? interviewModeResponse : response
+    if (textToCopy) {
       try {
-        await navigator.clipboard.writeText(response)
+        await navigator.clipboard.writeText(textToCopy)
       } catch (error) {
         console.error('Failed to copy text:', error)
       }
     }
   }
+
+  const hasContent = (isInterviewModeEnabled && interviewModeResponse) || response
 
   return (
     <div
@@ -76,7 +89,11 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
               // isLoading && 'analyzing-shimmer'
             )}
           >
-            {isLoading ? 'Analyzing...' : 'AI Response'}
+            {isLoading
+              ? 'Analyzing...'
+              : isInterviewModeEnabled
+                ? interviewModeStatus || 'Interview Mode'
+                : 'AI Response'}
           </Badge>
         </div>
 
@@ -125,7 +142,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                 ? 'text-white/70 hover:text-white hover:bg-white/10'
                 : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
             )}
-            disabled={!response}
+            disabled={!hasContent}
           >
             <Copy size={14} />
           </Button>
@@ -140,7 +157,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                 ? 'text-white/70 hover:text-white hover:bg-white/10'
                 : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
             )}
-            disabled={!response}
+            disabled={!hasContent}
           >
             <Trash2 size={14} />
           </Button>
@@ -172,22 +189,99 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
               'response-scroll-area'
             )}
           >
-            {isLoading && !response ? (
+            {isLoading && !response && !interviewModeResponse ? (
               <div className="text-center py-4 text-sm">
                 <p className={cn(effectiveTheme === 'dark' ? 'text-white/50' : 'text-zinc-500')}>
-                  <Badge
-                    className={cn(
-                      'px-2 py-1 rounded font-normal',
-                      effectiveTheme === 'dark'
-                        ? 'bg-white/10 text-white/80'
-                        : 'bg-zinc-500/10 text-zinc-500'
-                    )}
-                  >
-                    Ctrl+Enter
-                  </Badge>{' '}
-                  to analyze screen
+                  {isInterviewModeEnabled ? (
+                    <>{interviewModeStatus || 'Interview mode ready'}</>
+                  ) : (
+                    <>
+                      <Badge
+                        className={cn(
+                          'px-2 py-1 rounded font-normal',
+                          effectiveTheme === 'dark'
+                            ? 'bg-white/10 text-white/80'
+                            : 'bg-zinc-500/10 text-zinc-500'
+                        )}
+                      >
+                        Ctrl+Enter
+                      </Badge>{' '}
+                      to analyze screen
+                    </>
+                  )}
                 </p>
               </div>
+            ) : interviewModeResponse && isInterviewModeEnabled ? (
+              <>
+                {/* Interview Mode Display */}
+                {interviewModeTranscription && (
+                  <div className="mb-4 p-3 rounded border border-zinc-500/20 bg-blue-500/10">
+                    <h4
+                      className={cn(
+                        'text-sm font-medium mb-2',
+                        effectiveTheme === 'dark' ? 'text-blue-200' : 'text-blue-700'
+                      )}
+                    >
+                      Question Detected:
+                    </h4>
+                    <p
+                      className={cn(
+                        'text-sm',
+                        effectiveTheme === 'dark' ? 'text-white/80' : 'text-zinc-700'
+                      )}
+                    >
+                      {interviewModeTranscription}
+                    </p>
+                  </div>
+                )}
+
+                <div className="streaming-text">
+                  <div
+                    ref={contentRef}
+                    className={cn(
+                      'prose prose-sm max-w-none response-content',
+                      effectiveTheme === 'dark' ? 'prose-invert' : 'prose-gray',
+                      'appearing'
+                    )}
+                  >
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeHighlight]}
+                      components={{
+                        code: ({ className, children, ...props }) => {
+                          return (
+                            <code
+                              className={cn(
+                                className,
+                                effectiveTheme === 'dark'
+                                  ? 'bg-white/15 text-blue-200 px-1 rounded'
+                                  : 'bg-white/50 text-blue-700 px-1 rounded'
+                              )}
+                              {...props}
+                            >
+                              {children}
+                            </code>
+                          )
+                        },
+                        pre: ({ children }) => (
+                          <pre
+                            className={cn(
+                              'p-3 rounded overflow-x-auto text-sm',
+                              effectiveTheme === 'dark'
+                                ? 'bg-white/10 text-white border border-white/20'
+                                : 'bg-white/60 text-zinc-800 border border-zinc-200'
+                            )}
+                          >
+                            {children}
+                          </pre>
+                        )
+                      }}
+                    >
+                      {interviewModeResponse}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              </>
             ) : response ? (
               <div className="streaming-text">
                 <div
