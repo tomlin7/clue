@@ -14,6 +14,7 @@ const isDev = process.env.NODE_ENV === 'development'
 
 let mainWindow: BrowserWindow | null = null
 let isVisible = true
+let isRecordingMode = false
 
 interface ScreenSize {
   width: number
@@ -154,6 +155,33 @@ function registerGlobalShortcuts(): void {
     if (isVisible && mainWindow) {
       mainWindow.webContents.send('move-panels', 'right')
     }
+  })
+
+  // Toggle recording mode (Ctrl+R) - makes buttons fully clickable
+  globalShortcut.register('CommandOrControl+R', () => {
+    // if (mainWindow) {
+    //   isRecordingMode = !isRecordingMode
+    //   if (isRecordingMode) {
+    //     // Ensure window is fully interactive for recording
+    //     mainWindow.setAlwaysOnTop(false)
+    //     mainWindow.setIgnoreMouseEvents(false)
+    //     mainWindow.setFocusable(true)
+    //     console.log('Recording mode ON - window is now fully interactive for ShareX')
+    //     mainWindow.webContents.send('recording-mode-changed', true)
+    //   } else {
+    //     // Restore overlay behavior
+    //     mainWindow.setAlwaysOnTop(true, 'screen-saver')
+    //     mainWindow.setFocusable(false)
+    //     // Restore click-through behavior based on visibility
+    //     if (isVisible) {
+    //       mainWindow.setIgnoreMouseEvents(false)
+    //     } else {
+    //       mainWindow.setIgnoreMouseEvents(true, { forward: true })
+    //     }
+    //     console.log('Recording mode OFF - window restored to overlay mode')
+    //     mainWindow.webContents.send('recording-mode-changed', false)
+    //   }
+    // }
   })
 }
 
