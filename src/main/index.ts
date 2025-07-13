@@ -5,16 +5,17 @@ import {
   globalShortcut,
   ipcMain,
   IpcMainInvokeEvent,
-  screen
+  screen,
+  session
 } from 'electron'
 import * as path from 'path'
+import { cleanupAudio, setupAudioIpcHandlers } from './audioHandler'
 import { AIMode, AppConfig, configManager } from './config'
 
 const isDev = process.env.NODE_ENV === 'development'
 
 let mainWindow: BrowserWindow | null = null
 let isVisible = true
-let isRecordingMode = false
 
 interface ScreenSize {
   width: number
@@ -53,7 +54,7 @@ function createWindow(): void {
       offscreen: false, // Ensure proper rendering
       allowRunningInsecureContent: false,
       experimentalFeatures: false,
-      enableBlinkFeatures: '',
+      enableBlinkFeatures: 'GetDisplayMedia',
       disableBlinkFeatures: ''
     }
   })
@@ -129,6 +130,13 @@ function registerGlobalShortcuts(): void {
   globalShortcut.register('CommandOrControl+M', () => {
     if (isVisible && mainWindow) {
       mainWindow.webContents.send('toggle-microphone')
+    }
+  })
+
+  // Toggle system audio capture (Ctrl+A) - works even when window is hidden
+  globalShortcut.register('CommandOrControl+A', () => {
+    if (mainWindow) {
+      mainWindow.webContents.send('toggle-system-audio')
     }
   })
 
@@ -289,7 +297,30 @@ ipcMain.handle('config:open-config-folder', (): void => {
 })
 
 app.whenReady().then(() => {
+  // Setup display media request handler for system audio capture
+  session.defaultSession.setDisplayMediaRequestHandler(
+    (_request, callback) => {
+      desktopCapturer
+        .getSources({ types: ['screen'] })
+        .then((sources) => {
+          // On Windows/Linux, enable system audio loopback
+          callback({
+            video: sources[0],
+            audio: process.platform === 'darwin' ? undefined : 'loopback'
+          })
+        })
+        .catch((error) => {
+          console.error('Error getting desktop sources:', error)
+          callback({ video: undefined, audio: undefined })
+        })
+    },
+    { useSystemPicker: false } // Use false to avoid system picker dialog
+  )
+
   createWindow()
+
+  // Setup audio capture handlers
+  setupAudioIpcHandlers()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -308,7 +339,10 @@ app.on('will-quit', () => {
   globalShortcut.unregisterAll()
 })
 
-app.on('before-quit', () => {
+app.on('before-quit', async () => {
+  // Cleanup audio resources
+  await cleanupAudio()
+
   if (mainWindow) {
     mainWindow.removeAllListeners('close')
     mainWindow.close()

@@ -82,6 +82,11 @@ function App() {
         handleToggleRecording()
       })
 
+      // Handle system audio toggle (works even when window is hidden)
+      window.electronAPI.onToggleSystemAudio(() => {
+        handleToggleRecording()
+      })
+
       // Handle screenshot capture
       window.electronAPI.onScreenshotCaptured((_, imageData: string) => {
         handleScreenshotAnalysis(imageData)
@@ -93,6 +98,7 @@ function App() {
     return () => {
       window.electronAPI.removeAllListeners('toggle-visibility')
       window.electronAPI.removeAllListeners('toggle-microphone')
+      window.electronAPI.removeAllListeners('toggle-system-audio')
       window.electronAPI.removeAllListeners('screenshot-captured')
     }
   }, [isRecording, aiService])
@@ -100,21 +106,31 @@ function App() {
   const handleToggleRecording = async () => {
     try {
       if (isRecording) {
-        await audioService.stopRecording()
+        await audioService.stopSystemAudioCapture()
         setIsRecording(false)
-        const currentTranscription = audioService.getCurrentTranscription()
-        setTranscription(currentTranscription)
-        toast.success('Recording stopped')
+        toast.success('System audio capture stopped')
       } else {
-        await audioService.startRecording()
+        // Set up audio data callback to send to AI service
+        audioService.setAudioDataCallback(async (audioData) => {
+          try {
+            const result = await audioService.sendAudioData(audioData)
+            if (!result.success) {
+              console.error('Failed to send audio data:', result.error)
+            }
+          } catch (error) {
+            console.error('Error sending audio data:', error)
+          }
+        })
+
+        await audioService.startSystemAudioCapture()
         setIsRecording(true)
-        setTranscription('')
-        audioService.clearTranscription()
-        toast.success('Recording started')
+        setTranscription('') // Clear any previous transcription
+        toast.success('System audio capture started')
       }
     } catch (error) {
-      console.error('Error toggling recording:', error)
-      toast.error('Failed to toggle recording')
+      console.error('Error toggling system audio capture:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      toast.error(`Failed to toggle system audio capture: ${errorMessage}`)
     }
   }
 
@@ -137,8 +153,8 @@ function App() {
       setIsLoading(true)
       setResponse('')
       try {
-        const currentTranscription = audioService.getCurrentTranscription()
-        await tempAiService.analyzeScreenshotStream(imageData, currentTranscription, (partial) => {
+        // No transcription needed for system audio capture
+        await tempAiService.analyzeScreenshotStream(imageData, '', (partial) => {
           setResponse(partial)
         })
         // Update conversation sessions
@@ -146,11 +162,6 @@ function App() {
         const currentSession = tempAiService.getCurrentSession()
         setConversationSessions(sessions)
         setCurrentSessionId(currentSession?.id)
-        // Clear transcription after use
-        if (currentTranscription) {
-          setTranscription('')
-          audioService.clearTranscription()
-        }
         toast.success('Screenshot analyzed')
       } catch (error) {
         console.error('Error analyzing screenshot:', error)
@@ -164,8 +175,8 @@ function App() {
     setIsLoading(true)
     setResponse('')
     try {
-      const currentTranscription = audioService.getCurrentTranscription()
-      await aiService.analyzeScreenshotStream(imageData, currentTranscription, (partial) => {
+      // No transcription needed for system audio capture
+      await aiService.analyzeScreenshotStream(imageData, '', (partial) => {
         setResponse(partial)
       })
       // Update conversation sessions
@@ -173,11 +184,6 @@ function App() {
       const currentSession = aiService.getCurrentSession()
       setConversationSessions(sessions)
       setCurrentSessionId(currentSession?.id)
-      // Clear transcription after use
-      if (currentTranscription) {
-        setTranscription('')
-        audioService.clearTranscription()
-      }
       toast.success('Screenshot analyzed')
     } catch (error) {
       console.error('Error analyzing screenshot:', error)
