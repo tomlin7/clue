@@ -14,7 +14,6 @@ interface PanelGroupProps {
   onDeleteSession: (sessionId: string) => void
   isRecording: boolean
   onToggleRecording: () => void
-  transcription: string
   isVisible: boolean
   onOpenSettings: () => void
   isSettingsOpen?: boolean
@@ -34,7 +33,6 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
   onDeleteSession,
   isRecording,
   onToggleRecording,
-  transcription,
   isVisible,
   onOpenSettings,
   isSettingsOpen = false,
@@ -111,7 +109,6 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
           onAskQuestion={onAskQuestion}
           isRecording={isRecording}
           onToggleRecording={onToggleRecording}
-          transcription={transcription}
           onOpenSettings={onOpenSettings}
           isSettingsOpen={isSettingsOpen}
           className="animate-in fade-in-0 slide-in-from-top-4 duration-300"

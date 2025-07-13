@@ -1,12 +1,14 @@
 export class AudioService {
   private mediaStream: MediaStream | null = null
   private audioContext: AudioContext | null = null
-  private audioWorkletNode: AudioWorkletNode | null = null
+  private audioProcessor: ScriptProcessorNode | null = null
   private isCapturing = false
   private onAudioDataCallback: ((audioData: string) => void) | null = null
 
   // Audio configuration constants
   private static readonly SAMPLE_RATE = 24000
+  private static readonly BUFFER_SIZE = 4096
+  private static readonly AUDIO_CHUNK_DURATION = 0.1 // seconds
 
   constructor() {
     // System audio capture only - no microphone setup needed
@@ -15,7 +17,7 @@ export class AudioService {
   /**
    * Set callback function to receive processed audio data
    */
-  setAudioDataCallback(callback: (audioData: string) => void): void {
+  setAudioDataCallback(callback: ((audioData: string) => void) | null): void {
     this.onAudioDataCallback = callback
   }
 
@@ -39,9 +41,9 @@ export class AudioService {
         audioTrack: this.mediaStream.getAudioTracks()[0]?.getSettings()
       })
 
-      // Setup audio processing using AudioWorkletNode
+      // Setup audio processing using ScriptProcessorNode
       this.audioContext = new AudioContext({ sampleRate: AudioService.SAMPLE_RATE })
-      await this.setupAudioProcessing()
+      this.setupAudioProcessing()
       this.isCapturing = true
     } catch (error) {
       console.error('Error starting system audio capture:', error)
@@ -56,10 +58,9 @@ export class AudioService {
   async stopSystemAudioCapture(): Promise<void> {
     console.log('Stopping system audio capture...')
 
-    if (this.audioWorkletNode) {
-      this.audioWorkletNode.disconnect()
-      this.audioWorkletNode.port.close()
-      this.audioWorkletNode = null
+    if (this.audioProcessor) {
+      this.audioProcessor.disconnect()
+      this.audioProcessor = null
     }
 
     if (this.audioContext) {
@@ -114,16 +115,16 @@ export class AudioService {
           // Use getDisplayMedia - Electron will handle the system audio via setDisplayMediaRequestHandler
           const stream = await navigator.mediaDevices.getDisplayMedia({
             video: {
-              width: { ideal: 1 },
-              height: { ideal: 1 },
-              frameRate: { ideal: 1 }
+              frameRate: 1,
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
             },
             audio: {
-              echoCancellation: false, // Don't cancel system audio
-              noiseSuppression: false,
-              autoGainControl: false,
               sampleRate: AudioService.SAMPLE_RATE,
-              channelCount: 1
+              channelCount: 1,
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
             }
           })
 
@@ -177,33 +178,45 @@ export class AudioService {
   }
 
   /**
-   * Setup audio processing pipeline using AudioWorkletNode
+   * Setup audio processing pipeline using ScriptProcessorNode
    */
-  private async setupAudioProcessing(): Promise<void> {
+  private setupAudioProcessing(): void {
     if (!this.audioContext || !this.mediaStream) {
       throw new Error('Audio context or media stream not available')
     }
 
     try {
-      // Load the audio worklet processor
-      await this.audioContext.audioWorklet.addModule('/audioProcessor.js')
+      // Create script processor node
+      const source = this.audioContext.createMediaStreamSource(this.mediaStream)
+      this.audioProcessor = this.audioContext.createScriptProcessor(AudioService.BUFFER_SIZE, 1, 1)
 
-      // Create the audio worklet node
-      this.audioWorkletNode = new AudioWorkletNode(this.audioContext, 'system-audio-processor')
+      let audioBuffer: number[] = []
+      const samplesPerChunk = AudioService.SAMPLE_RATE * AudioService.AUDIO_CHUNK_DURATION
 
-      // Set up message handling for audio data
-      this.audioWorkletNode.port.onmessage = (event) => {
-        if (event.data.type === 'audioData' && this.onAudioDataCallback) {
-          this.onAudioDataCallback(event.data.data)
+      this.audioProcessor.onaudioprocess = (e) => {
+        const inputData = e.inputBuffer.getChannelData(0)
+        audioBuffer.push(...inputData)
+
+        // Process audio in chunks
+        while (audioBuffer.length >= samplesPerChunk) {
+          const chunk = audioBuffer.splice(0, samplesPerChunk)
+          const pcmData16 = this.convertFloat32ToInt16(new Float32Array(chunk))
+          const base64Data = this.arrayBufferToBase64(pcmData16.buffer as ArrayBuffer)
+
+          // Just log that we're receiving audio data, no processing to AI
+          console.log('System audio data captured, length:', base64Data.length)
+
+          // Optionally call callback if someone wants to handle raw audio data
+          if (this.onAudioDataCallback) {
+            this.onAudioDataCallback(base64Data)
+          }
         }
       }
 
-      // Connect audio pipeline
-      const source = this.audioContext.createMediaStreamSource(this.mediaStream)
-      source.connect(this.audioWorkletNode)
-      this.audioWorkletNode.connect(this.audioContext.destination)
+      source.connect(this.audioProcessor)
+      this.audioProcessor.connect(this.audioContext.destination)
     } catch (error) {
-      console.error('Error setting up audio worklet:', error)
+      console.error('Error setting up audio processor:', error)
       throw new Error(
         `Failed to setup audio processing: ${error instanceof Error ? error.message : 'Unknown error'}`
       )
@@ -211,16 +224,39 @@ export class AudioService {
   }
 
   /**
-   * Send audio data to AI service via Electron main process
+   * Convert Float32Array to Int16Array for transmission
    */
-  async sendAudioData(audioData: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      return await window.electronAPI.audio.sendData(audioData)
-    } catch (error) {
-      console.error('Error sending audio data:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      return { success: false, error: errorMessage }
+  private convertFloat32ToInt16(float32Array: Float32Array): Int16Array {
+    const int16Array = new Int16Array(float32Array.length)
+    for (let i = 0; i < float32Array.length; i++) {
+      // Improved scaling to prevent clipping
+      const s = Math.max(-1, Math.min(1, float32Array[i]))
+      int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7fff
     }
+    return int16Array
+  }
+
+  /**
+   * Convert ArrayBuffer to Base64 string
+   */
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = ''
+    const bytes = new Uint8Array(buffer)
+    const len = bytes.byteLength
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    return btoa(binary)
+  }
+
+  /**
+   * Send audio data to AI service via Electron main process
+   * THIS METHOD IS DISABLED - NO AI PROCESSING FOR NOW
+   */
+  async sendAudioData(_audioData: string): Promise<{ success: boolean; error?: string }> {
+    // Disabled for now - no AI processing
+    console.log('sendAudioData called but disabled - no AI processing')
+    return { success: true, error: 'AI processing disabled' }
   }
 
   /**
