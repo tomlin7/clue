@@ -3,7 +3,17 @@ import { Button } from '@/components/ui/button'
 import { CardContent } from '@/components/ui/card'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
-import { Copy, History, Maximize2, Minimize2, Plus, Trash2 } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  History,
+  Maximize2,
+  Mic,
+  Minimize2,
+  Plus,
+  Trash2
+} from 'lucide-react'
 import React, { useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
@@ -36,10 +46,32 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   isInterviewModeEnabled
 }) => {
   const [isMinimized, setIsMinimized] = useState(false)
+  const [page, setPage] = useState(0)
   const contentRef = useRef<HTMLDivElement>(null)
   const { effectiveTheme } = useTheme()
 
-  // Removed all contentHeight and resizing logic
+  // Pagination logic for interviewModeResponse
+  const PAGE_WORD_LIMIT = 120
+  let paginatedInterviewModeResponses: string[] = []
+  if (isInterviewModeEnabled && interviewModeResponse) {
+    const words = interviewModeResponse.trim().split(/\s+/)
+    for (let i = 0; i < words.length; i += PAGE_WORD_LIMIT) {
+      paginatedInterviewModeResponses.push(words.slice(i, i + PAGE_WORD_LIMIT).join(' '))
+    }
+  }
+
+  // Always keep user on the last page if the number of pages increases
+  const prevNumPagesRef = React.useRef(0)
+  React.useEffect(() => {
+    if (isInterviewModeEnabled && interviewModeResponse) {
+      const words = interviewModeResponse.trim().split(/\s+/)
+      const numPages = Math.ceil(words.length / PAGE_WORD_LIMIT)
+      if (numPages > prevNumPagesRef.current) {
+        setPage(numPages - 1)
+      }
+      prevNumPagesRef.current = numPages
+    }
+  }, [interviewModeResponse, isInterviewModeEnabled])
 
   const handleCopy = async () => {
     const textToCopy =
@@ -96,6 +128,42 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Pagination widget in header, only for interview mode with multiple pages */}
+          {isInterviewModeEnabled && paginatedInterviewModeResponses.length > 1 && (
+            <div className="flex items-center gap-1 ml-2">
+              <button
+                className={cn(
+                  'px-2 py-1 rounded text-xs',
+                  effectiveTheme === 'dark'
+                    ? 'bg-white/15 text-white/80'
+                    : 'bg-zinc-500/10 text-zinc-500',
+                  'disabled:opacity-50'
+                )}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                {page + 1}/{paginatedInterviewModeResponses.length}
+              </span>
+              <button
+                className={cn(
+                  'px-2 py-1 rounded text-xs',
+                  effectiveTheme === 'dark'
+                    ? 'bg-white/15 text-white/80'
+                    : 'bg-zinc-500/10 text-zinc-500',
+                  'disabled:opacity-50'
+                )}
+                onClick={() =>
+                  setPage((p) => Math.min(paginatedInterviewModeResponses.length - 1, p + 1))
+                }
+                disabled={page === paginatedInterviewModeResponses.length - 1}
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -194,17 +262,43 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                     <>{interviewModeStatus || 'Interview mode ready'}</>
                   ) : (
                     <>
-                      <Badge
+                      Turn on the{' '}
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className={cn(
-                          'px-2 py-1 rounded font-normal',
+                          'h-6 w-6 rounded-full transition-all duration-200 relative z-20',
                           effectiveTheme === 'dark'
                             ? 'bg-white/10 text-white/80'
                             : 'bg-zinc-500/10 text-zinc-500'
                         )}
                       >
-                        Ctrl+Enter
-                      </Badge>{' '}
-                      to analyze screen
+                        <Mic size={14} className="inline-block" />{' '}
+                      </Button>{' '}
+                      mode or press{' '}
+                      <div className="inline-block">
+                        <kbd
+                          className={cn(
+                            'px-2 py-1 rounded text-xs mr-1',
+                            effectiveTheme === 'dark'
+                              ? 'bg-white/15 text-white/80'
+                              : 'bg-zinc-500/10 text-zinc-500'
+                          )}
+                        >
+                          Ctrl
+                        </kbd>
+                        <kbd
+                          className={cn(
+                            'px-2 py-1 rounded text-xs',
+                            effectiveTheme === 'dark'
+                              ? 'bg-white/15 text-white/80'
+                              : 'bg-zinc-500/10 text-zinc-500'
+                          )}
+                        >
+                          ↵
+                        </kbd>
+                      </div>{' '}
+                      to go manual
                     </>
                   )}
                 </p>
@@ -362,7 +456,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                       )
                     }}
                   >
-                    {interviewModeResponse}
+                    {paginatedInterviewModeResponses[page]}
                   </ReactMarkdown>
                 </div>
               </div>
@@ -526,17 +620,43 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
             ) : (
               <div className="text-center py-4 text-sm">
                 <p className={cn(effectiveTheme === 'dark' ? 'text-white/50' : 'text-zinc-500')}>
-                  <Badge
+                  Turn on the{' '}
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     className={cn(
-                      'px-2 py-1 rounded font-normal',
+                      'h-6 w-6 rounded-full transition-all duration-200 relative z-20',
                       effectiveTheme === 'dark'
                         ? 'bg-white/10 text-white/80'
                         : 'bg-zinc-500/10 text-zinc-500'
                     )}
                   >
-                    Ctrl+Enter
-                  </Badge>{' '}
-                  to analyze screen
+                    <Mic size={14} className="inline-block" />{' '}
+                  </Button>{' '}
+                  mode or press{' '}
+                  <div className="inline-block">
+                    <kbd
+                      className={cn(
+                        'px-2 py-1 rounded text-xs mr-1',
+                        effectiveTheme === 'dark'
+                          ? 'bg-white/15 text-white/80'
+                          : 'bg-zinc-500/10 text-zinc-500'
+                      )}
+                    >
+                      Ctrl
+                    </kbd>
+                    <kbd
+                      className={cn(
+                        'px-2 py-1 rounded text-xs',
+                        effectiveTheme === 'dark'
+                          ? 'bg-white/15 text-white/80'
+                          : 'bg-zinc-500/10 text-zinc-500'
+                      )}
+                    >
+                      ↵
+                    </kbd>
+                  </div>{' '}
+                  to go manual
                 </p>
               </div>
             )}

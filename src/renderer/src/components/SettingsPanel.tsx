@@ -133,9 +133,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
         <div className="flex items-center gap-2">
           <Badge
             variant="secondary"
-            className={cn(
-              effectiveTheme === 'dark' ? 'bg-white/10 text-white' : 'bg-white/30 text-zinc-700'
-            )}
+            className={cn(effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-700', 'text-md')}
           >
             Settings
           </Badge>
