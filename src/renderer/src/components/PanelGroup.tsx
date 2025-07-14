@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { ControlPanel } from './ControlPanel'
 import { ConversationHistory } from './ConversationHistory'
 import { ResponsePanel } from './ResponsePanel'
+import { InterviewerPanel } from './onboarding/InterviewerPanel'
 
 interface PanelGroupProps {
   onAskQuestion: (question: string) => void
@@ -132,10 +133,23 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
           isHistoryVisible={isHistoryVisible}
           className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300"
           interviewModeStatus={interviewModeStatus}
-          interviewModeTranscription={interviewModeTranscription}
           interviewModeResponse={interviewModeResponse}
           isInterviewModeEnabled={isInterviewModeEnabled}
         />
+
+        {/* Show InterviewerPanel only in interview mode and if there is a transcription */}
+        {isInterviewModeEnabled && interviewModeTranscription && (
+          <InterviewerPanel
+            transcription={interviewModeTranscription}
+            theme={
+              typeof window !== 'undefined' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+            }
+          />
+        )}
 
         {/* Show conversation history when visible */}
         <ConversationHistory
