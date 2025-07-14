@@ -653,6 +653,50 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               )}
             />
           </div>
+
+          {/* Tools Settings */}
+          <div className="space-y-3">
+            <h3
+              className={cn(
+                'text-sm font-medium',
+                effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+              )}
+            >
+              Tools
+            </h3>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="google-search-tool"
+                checked={config.tools?.includes('google-search')}
+                onChange={(e) => {
+                  const enabled = e.target.checked
+                  const newTools = enabled
+                    ? Array.from(new Set([...(config.tools || []), 'google-search']))
+                    : (config.tools || []).filter((t) => t !== 'google-search')
+                  updateConfig({ tools: newTools })
+                }}
+                className="accent-blue-500 w-4 h-4"
+              />
+              <label
+                htmlFor="google-search-tool"
+                className={cn(
+                  'text-sm',
+                  effectiveTheme === 'dark' ? 'text-white/80' : 'text-zinc-700'
+                )}
+              >
+                Enable Google Search Tool
+              </label>
+            </div>
+            <div
+              className={cn(
+                'text-xs',
+                effectiveTheme === 'dark' ? 'text-white/60' : 'text-zinc-600'
+              )}
+            >
+              Allow the AI to use Google Search for real-time answers.
+            </div>
+          </div>
         </div>
 
         {/* Reset Settings */}

@@ -28,6 +28,7 @@ export interface AppConfig {
   modes: AIMode[]
   apiKey: string
   interviewMode: InterviewModeConfig
+  tools: string[] // e.g., ['google-search']
 }
 
 const defaultModes: AIMode[] = [
@@ -197,7 +198,8 @@ const defaultConfig: AppConfig = {
     autoAnalyze: true,
     customPrompt: '',
     language: 'en-US'
-  }
+  },
+  tools: ['google-search']
 }
 
 class ConfigManager {

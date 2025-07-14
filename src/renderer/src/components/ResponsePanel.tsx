@@ -51,7 +51,7 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   const { effectiveTheme } = useTheme()
 
   // Pagination logic for interviewModeResponse
-  const PAGE_WORD_LIMIT = 120
+  const PAGE_WORD_LIMIT = 200
   let paginatedInterviewModeResponses: string[] = []
   if (isInterviewModeEnabled && interviewModeResponse) {
     const words = interviewModeResponse.trim().split(/\s+/)
