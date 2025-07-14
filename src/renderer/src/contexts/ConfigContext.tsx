@@ -26,6 +26,7 @@ export interface AppConfig {
   modes: AIMode[]
   position: { x: number; y: number }
   interviewMode: InterviewModeConfig
+  tools: string[] // e.g., ['google-search']
 }
 
 interface ConfigContextType {
@@ -57,6 +58,7 @@ interface ConfigProviderProps {
 }
 
 export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
+  const defaultTools = ['google-search']
   const [config, setConfig] = useState<AppConfig | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -65,7 +67,11 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     const loadConfig = async () => {
       try {
         const loadedConfig = await window.electronAPI.config.get()
-        setConfig(loadedConfig)
+        // Ensure tools array exists for backward compatibility
+        setConfig({
+          ...loadedConfig,
+          tools: loadedConfig.tools ?? defaultTools
+        })
 
         // Apply opacity to the app
         const root = document.documentElement
@@ -86,7 +92,10 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     try {
       await window.electronAPI.config.update(updates)
       const updatedConfig = { ...config, ...updates }
-      setConfig(updatedConfig)
+      setConfig({
+        ...updatedConfig,
+        tools: updatedConfig.tools ?? defaultTools
+      })
 
       // Apply opacity immediately if it changed
       if (updates.opacity !== undefined) {
@@ -103,7 +112,10 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
       const id = await window.electronAPI.config.addMode(mode)
       // Reload config to get the updated modes
       const updatedConfig = await window.electronAPI.config.get()
-      setConfig(updatedConfig)
+      setConfig({
+        ...updatedConfig,
+        tools: updatedConfig.tools ?? defaultTools
+      })
       return id
     } catch (error) {
       console.error('Failed to add mode:', error)
@@ -116,7 +128,10 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
       await window.electronAPI.config.updateMode(id, updates)
       // Reload config to get the updated modes
       const updatedConfig = await window.electronAPI.config.get()
-      setConfig(updatedConfig)
+      setConfig({
+        ...updatedConfig,
+        tools: updatedConfig.tools ?? defaultTools
+      })
     } catch (error) {
       console.error('Failed to update mode:', error)
     }
@@ -127,7 +142,10 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
       await window.electronAPI.config.deleteMode(id)
       // Reload config to get the updated modes
       const updatedConfig = await window.electronAPI.config.get()
-      setConfig(updatedConfig)
+      setConfig({
+        ...updatedConfig,
+        tools: updatedConfig.tools ?? defaultTools
+      })
     } catch (error) {
       console.error('Failed to delete mode:', error)
     }
@@ -153,7 +171,10 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     try {
       await window.electronAPI.config.reset()
       const updatedConfig = await window.electronAPI.config.get()
-      setConfig(updatedConfig)
+      setConfig({
+        ...updatedConfig,
+        tools: updatedConfig.tools ?? defaultTools
+      })
 
       // Apply opacity
       const root = document.documentElement
@@ -194,7 +215,11 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     try {
       await window.electronAPI.config.setApiKey(apiKey)
       if (config) {
-        setConfig({ ...config, apiKey })
+        setConfig({
+          ...config,
+          apiKey,
+          tools: config.tools ?? defaultTools
+        })
       }
     } catch (error) {
       console.error('Failed to set API key:', error)
@@ -223,7 +248,11 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     try {
       await window.electronAPI.config.clearApiKey()
       if (config) {
-        setConfig({ ...config, apiKey: '' })
+        setConfig({
+          ...config,
+          apiKey: '',
+          tools: config.tools ?? defaultTools
+        })
       }
     } catch (error) {
       console.error('Failed to clear API key:', error)

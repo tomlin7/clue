@@ -149,7 +149,10 @@ Please respond in a conversational, helpful manner as if you're assisting someon
     return basePrompt
   }
 
-  async initializeSession(config: LiveSessionConfig, isReconnection = false): Promise<boolean> {
+  async initializeSession(
+    config: LiveSessionConfig & { tools?: string[] },
+    isReconnection = false
+  ): Promise<boolean> {
     if (this.isInitializing) {
       console.log('Session initialization already in progress')
       return false
@@ -175,6 +178,9 @@ Please respond in a conversational, helpful manner as if you're assisting someon
     }
 
     try {
+      // If tools are enabled, pass them to the config (object form for Google Search)
+      const tools =
+        config.tools && config.tools.includes('google-search') ? [{ googleSearch: {} }] : []
       this.session = await this.client.live.connect({
         model: 'gemini-2.0-flash-exp',
         callbacks: {
@@ -271,7 +277,7 @@ Please respond in a conversational, helpful manner as if you're assisting someon
         },
         config: {
           responseModalities: ['TEXT'] as any,
-          tools: [], // We can add tools like Google Search later if needed
+          tools,
           inputAudioTranscription: {},
           contextWindowCompression: { slidingWindow: {} },
           speechConfig: { languageCode: config.language || 'en-US' },

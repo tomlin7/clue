@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/contexts/ThemeContext'
 import { cn } from '@/lib/utils'
-import { Mic, MicOff, Settings } from 'lucide-react'
+import { Mic, MicOff, Settings, X } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
 interface ControlPanelProps {
@@ -61,6 +61,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <Button
             variant="ghost"
             size="icon"
+            title="Interview"
             onClick={onToggleRecording}
             className={cn(
               'h-8 w-8 rounded-full transition-all duration-200 relative z-20',
@@ -87,7 +88,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             </Badge>
           )}
         </div>
-        <div className="flex items-center justify-end flex-1 gap-4">
+        <div className="flex items-center justify-end flex-1 gap-3">
           <div className="flex items-center gap-1">
             <Badge
               variant="secondary"
@@ -151,32 +152,56 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               \
             </kbd>
           </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onOpenSettings}
-            className={cn(
-              'h-8 w-8 relative z-20 rounded-full border zinc-border transition-all duration-300 ease-in-out group',
-              'hover:scale-105',
-              isSettingsOpen
-                ? effectiveTheme === 'dark'
-                  ? 'text-zinc-400 bg-zinc-500/20 border-zinc-400/40'
-                  : 'text-zinc-600 bg-zinc-100/60 border-zinc-300/50'
-                : effectiveTheme === 'dark'
+          <div className="flex items-center justify-end gap-2 ">
+            {/* bg-zinc-500/10 rounded-full p-1 */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onOpenSettings}
+              className={cn(
+                'h-8 w-8 relative z-20 rounded-full border zinc-border transition-all duration-300 ease-in-out group',
+                'hover:scale-105',
+                isSettingsOpen
+                  ? effectiveTheme === 'dark'
+                    ? 'text-zinc-400 bg-zinc-500/20 border-zinc-400/40'
+                    : 'text-zinc-600 bg-zinc-100/60 border-zinc-300/50'
+                  : effectiveTheme === 'dark'
+                    ? 'text-white/70 hover:text-white hover:bg-white/10'
+                    : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
+              )}
+              title="Settings"
+            >
+              <Settings
+                size={16}
+                className={cn(
+                  'transition-transform duration-500 ease-in-out',
+                  'group-hover:rotate-90',
+                  isSettingsOpen && 'rotate-250'
+                )}
+              />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.close()}
+              className={cn(
+                'h-8 w-8 relative z-20 rounded-full border zinc-border transition-all duration-300 ease-in-out group',
+                'hover:scale-105',
+                effectiveTheme === 'dark'
                   ? 'text-white/70 hover:text-white hover:bg-white/10'
                   : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
-            )}
-          >
-            <Settings
-              size={16}
-              className={cn(
-                'transition-transform duration-500 ease-in-out',
-                'group-hover:rotate-90',
-                isSettingsOpen && 'rotate-250'
               )}
-            />
-          </Button>
+              title="Close App"
+            >
+              <X
+                size={16}
+                className={cn(
+                  'transition-transform duration-500 ease-in-out',
+                  'group-hover:rotate-90'
+                )}
+              />
+            </Button>
+          </div>
         </div>
       </div>
 

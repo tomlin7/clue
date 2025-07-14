@@ -26,6 +26,7 @@ export interface AppConfig {
   modes: AIMode[]
   apiKey: string
   interviewMode: InterviewModeConfig
+  tools: string[]
 }
 
 export interface ElectronAPI {
