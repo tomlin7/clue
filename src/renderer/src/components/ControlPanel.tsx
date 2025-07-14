@@ -79,10 +79,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <Badge
               variant="destructive"
               className={cn(
-                'border-0 text-zinc-500 text-sm font-normal ' //animate-pulse
-                // effectiveTheme === 'dark'
-                //   ? 'bg-red-600/60 text-red-100'
-                //   : 'bg-red-500/70 text-red-900'
+                'border-0 text-zinc-500 text-sm font-normal ', //animate-pulse
+                effectiveTheme === 'dark' ? 'text-white/80' : 'text-zinc-500'
               )}
             >
               {formatTime(recordingTime)}
