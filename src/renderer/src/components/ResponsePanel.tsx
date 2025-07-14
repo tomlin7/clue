@@ -19,7 +19,6 @@ interface ResponsePanelProps {
   className?: string
   // Interview mode props
   interviewModeStatus?: string
-  interviewModeTranscription?: string
   interviewModeResponse?: string
   isInterviewModeEnabled?: boolean
 }
@@ -33,7 +32,6 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   isHistoryVisible,
   className,
   interviewModeStatus,
-  interviewModeTranscription,
   interviewModeResponse,
   isInterviewModeEnabled
 }) => {
@@ -212,76 +210,162 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
                 </p>
               </div>
             ) : interviewModeResponse && isInterviewModeEnabled ? (
-              <>
-                {/* Interview Mode Display */}
-                {interviewModeTranscription && (
-                  <div className="mb-4 p-3 rounded border border-zinc-500/20 bg-blue-500/10">
-                    <h4
-                      className={cn(
-                        'text-sm font-medium mb-2',
-                        effectiveTheme === 'dark' ? 'text-blue-200' : 'text-blue-700'
-                      )}
-                    >
-                      Question Detected:
-                    </h4>
-                    <p
-                      className={cn(
-                        'text-sm',
-                        effectiveTheme === 'dark' ? 'text-white/80' : 'text-zinc-700'
-                      )}
-                    >
-                      {interviewModeTranscription}
-                    </p>
-                  </div>
-                )}
-
-                <div className="streaming-text">
-                  <div
-                    ref={contentRef}
-                    className={cn(
-                      'prose prose-sm max-w-none response-content',
-                      effectiveTheme === 'dark' ? 'prose-invert' : 'prose-gray',
-                      'appearing'
-                    )}
-                  >
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeHighlight]}
-                      components={{
-                        code: ({ className, children, ...props }) => {
-                          return (
-                            <code
-                              className={cn(
-                                className,
-                                effectiveTheme === 'dark'
-                                  ? 'bg-white/15 text-blue-200 px-1 rounded'
-                                  : 'bg-white/50 text-blue-700 px-1 rounded'
-                              )}
-                              {...props}
-                            >
-                              {children}
-                            </code>
-                          )
-                        },
-                        pre: ({ children }) => (
-                          <pre
+              <div className="streaming-text">
+                <div
+                  ref={contentRef}
+                  className={cn(
+                    'prose prose-sm max-w-none response-content',
+                    effectiveTheme === 'dark' ? 'prose-invert' : 'prose-gray',
+                    interviewModeResponse && !isLoading && 'appearing'
+                  )}
+                >
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeHighlight]}
+                    components={{
+                      code: ({ className, children, ...props }) => {
+                        return (
+                          <code
                             className={cn(
-                              'p-3 rounded overflow-x-auto text-sm',
+                              className,
                               effectiveTheme === 'dark'
-                                ? 'bg-white/10 text-white border border-white/20'
-                                : 'bg-white/60 text-zinc-800 border border-zinc-200'
+                                ? 'bg-white/15 text-blue-200 px-1 rounded'
+                                : 'bg-white/50 text-blue-700 px-1 rounded'
+                            )}
+                            {...props}
+                          >
+                            {children}
+                          </code>
+                        )
+                      },
+                      pre: ({ children }) => (
+                        <pre
+                          className={cn(
+                            'p-4 rounded-lg overflow-x-auto',
+                            effectiveTheme === 'dark'
+                              ? 'bg-gray-800/50 border border-gray-700'
+                              : 'bg-white/40 border border-white/50'
+                          )}
+                        >
+                          {children}
+                        </pre>
+                      ),
+                      h1: ({ children }) => (
+                        <h1
+                          className={cn(
+                            'text-xl font-bold mb-4',
+                            effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+                          )}
+                        >
+                          {children}
+                        </h1>
+                      ),
+                      h2: ({ children }) => (
+                        <h2
+                          className={cn(
+                            'text-lg font-semibold mb-3',
+                            effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+                          )}
+                        >
+                          {children}
+                        </h2>
+                      ),
+                      h3: ({ children }) => (
+                        <h3
+                          className={cn(
+                            'text-md font-medium mb-2',
+                            effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+                          )}
+                        >
+                          {children}
+                        </h3>
+                      ),
+                      p: ({ children }) => (
+                        <p
+                          className={cn(
+                            'mb-3',
+                            effectiveTheme === 'dark' ? 'text-white/90' : 'text-zinc-700'
+                          )}
+                        >
+                          {children}
+                        </p>
+                      ),
+                      ul: ({ children }) => (
+                        <ul
+                          className={cn(
+                            'list-disc pl-6 mb-3',
+                            effectiveTheme === 'dark' ? 'text-white/90' : 'text-zinc-700'
+                          )}
+                        >
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol
+                          className={cn(
+                            'list-decimal pl-6 mb-3',
+                            effectiveTheme === 'dark' ? 'text-white/90' : 'text-zinc-700'
+                          )}
+                        >
+                          {children}
+                        </ol>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote
+                          className={cn(
+                            'border-l-4 pl-4 py-2 mb-3 italic',
+                            effectiveTheme === 'dark'
+                              ? 'border-blue-400 bg-blue-500/10 text-blue-100'
+                              : 'border-blue-500 bg-blue-100/40 text-blue-800'
+                          )}
+                        >
+                          {children}
+                        </blockquote>
+                      ),
+                      table: ({ children }) => (
+                        <div className="overflow-x-auto mb-3">
+                          <table
+                            className={cn(
+                              'min-w-full border-collapse',
+                              effectiveTheme === 'dark'
+                                ? 'border border-gray-600'
+                                : 'border border-white/50'
                             )}
                           >
                             {children}
-                          </pre>
-                        )
-                      }}
-                    >
-                      {interviewModeResponse}
-                    </ReactMarkdown>
-                  </div>
+                          </table>
+                        </div>
+                      ),
+                      th: ({ children }) => (
+                        <th
+                          className={cn(
+                            'border px-4 py-2 text-left font-semibold',
+                            effectiveTheme === 'dark'
+                              ? 'border-gray-600 bg-gray-700 text-white'
+                              : 'border-white/50 bg-white/30 text-zinc-800'
+                          )}
+                        >
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }) => (
+                        <td
+                          className={cn(
+                            'border px-4 py-2',
+                            effectiveTheme === 'dark'
+                              ? 'border-gray-600 text-white/90'
+                              : 'border-white/50 text-zinc-700'
+                          )}
+                        >
+                          {children}
+                        </td>
+                      )
+                    }}
+                  >
+                    {interviewModeResponse}
+                  </ReactMarkdown>
                 </div>
-              </>
+              </div>
             ) : response ? (
               <div className="streaming-text">
                 <div
