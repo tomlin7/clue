@@ -4,9 +4,13 @@ import { Input } from '@/components/ui/input'
 import { Slider } from '@/components/ui/slider'
 import { useConfig } from '@/contexts/ConfigContext'
 import { useTheme } from '@/contexts/ThemeContext'
+import { extractTextFromPdf } from '@/lib/pdfTextExtract'
 import { cn } from '@/lib/utils'
 import { ExternalLink, FileText, Moon, Palette, Plus, RotateCcw, Sun, X } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import rehypeHighlight from 'rehype-highlight'
+import remarkGfm from 'remark-gfm'
 
 interface SettingsPanelProps {
   isOpen: boolean
@@ -23,7 +27,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
     getSelectedMode,
     resetConfig,
     selectInterviewProfile,
-    getSelectedInterviewProfile
+    getSelectedInterviewProfile,
+    updateResumeAnalysis
   } = useConfig() as any
   const { theme, setTheme, effectiveTheme } = useTheme()
 
@@ -31,6 +36,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
   const [localOpacity, setLocalOpacity] = useState(config.opacity)
   const debouncedUpdateRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const [loadingConfig, setLoadingConfig] = useState(false)
+  const [resumeUploading, setResumeUploading] = useState(false)
+  const [resumeError, setResumeError] = useState<string | null>(null)
 
   // Sync local state with config changes (e.g., from other sources)
   useEffect(() => {
@@ -125,6 +132,36 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
     }
   }
 
+  // PDF upload handler
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setResumeError(null)
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.type !== 'application/pdf') {
+      setResumeError('Please upload a PDF file.')
+      return
+    }
+    setResumeUploading(true)
+    try {
+      // Extract text from PDF
+      const resumeText = await extractTextFromPdf(file)
+      if (!resumeText || resumeText.length < 20) {
+        setResumeError('Could not extract text from PDF. Please check your file.')
+        setResumeUploading(false)
+        return
+      }
+      // Dynamically import aiService and call analyzeResumePdf
+      const aiServiceModule = await import('@/services/aiService')
+      const aiService = new aiServiceModule.AIService(config)
+      const summary = await aiService.analyzeResumePdf(resumeText)
+      await updateResumeAnalysis(summary)
+    } catch (err: any) {
+      setResumeError('Failed to analyze resume. Please try again.')
+    } finally {
+      setResumeUploading(false)
+    }
+  }
+
   return (
     <div
       className={cn(
@@ -163,7 +200,186 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-6 max-h-[500px] overflow-y-auto">
+      <div className="p-4 space-y-2 max-h-[500px] overflow-y-auto">
+        {/* Resume Upload */}
+        <div className="border-b border-zinc-500/10 flex flex-col gap-2">
+          <label
+            className={cn(
+              'text-sm font-medium',
+              effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+            )}
+          >
+            {config.resumeAnalysis ? 'Replace Your Resume (PDF)' : 'Upload Your Resume (PDF)'}
+          </label>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={handleResumeUpload}
+            disabled={resumeUploading}
+            className="text-xs bg-white/10 border border-zinc-500/20 rounded p-2 file:border-0 file:bg-zinc-500 file:text-white file:rounded file:px-3 file:py-1.5 hover:file:bg-zinc-700 transition-colors duration-200"
+          />
+          {resumeUploading && <div className="text-xs text-blue-500">Analyzing resume...</div>}
+          {resumeError && <div className="text-xs text-red-500">{resumeError}</div>}
+          {config.resumeAnalysis && (
+            <div
+              className={cn(
+                'text-xs p-2 rounded bg-green-100/60 mt-2',
+                effectiveTheme === 'dark' ? 'bg-green-900/30 text-green-200' : 'text-green-800'
+              )}
+            >
+              <details>
+                <summary className="cursor-pointer font-semibold mb-1 select-none">
+                  Uploaded
+                </summary>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeHighlight]}
+                  components={{
+                    code: ({ className, children, ...props }) => {
+                      return (
+                        <code
+                          className={cn(
+                            className,
+                            effectiveTheme === 'dark'
+                              ? 'bg-white/15 text-blue-200 px-1 rounded'
+                              : 'bg-white/50 text-blue-700 px-1 rounded'
+                          )}
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      )
+                    },
+                    pre: ({ children }) => (
+                      <pre
+                        className={cn(
+                          'p-4 rounded-lg overflow-x-auto',
+                          effectiveTheme === 'dark'
+                            ? 'bg-gray-800/50 border border-gray-700'
+                            : 'bg-white/40 border border-white/50'
+                        )}
+                      >
+                        {children}
+                      </pre>
+                    ),
+                    h1: ({ children }) => (
+                      <h1
+                        className={cn(
+                          'text-xl font-bold mb-4',
+                          effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+                        )}
+                      >
+                        {children}
+                      </h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2
+                        className={cn(
+                          'text-lg font-semibold mb-3',
+                          effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+                        )}
+                      >
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3
+                        className={cn(
+                          'text-md font-medium mb-2',
+                          effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+                        )}
+                      >
+                        {children}
+                      </h3>
+                    ),
+                    p: ({ children }) => (
+                      <p
+                        className={cn(
+                          'mb-3',
+                          effectiveTheme === 'dark' ? 'text-white/90' : 'text-zinc-700'
+                        )}
+                      >
+                        {children}
+                      </p>
+                    ),
+                    ul: ({ children }) => (
+                      <ul
+                        className={cn(
+                          'list-disc pl-6 mb-3',
+                          effectiveTheme === 'dark' ? 'text-white/90' : 'text-zinc-700'
+                        )}
+                      >
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol
+                        className={cn(
+                          'list-decimal pl-6 mb-3',
+                          effectiveTheme === 'dark' ? 'text-white/90' : 'text-zinc-700'
+                        )}
+                      >
+                        {children}
+                      </ol>
+                    ),
+                    blockquote: ({ children }) => (
+                      <blockquote
+                        className={cn(
+                          'border-l-4 pl-4 py-2 mb-3 italic',
+                          effectiveTheme === 'dark'
+                            ? 'border-blue-400 bg-blue-500/10 text-blue-100'
+                            : 'border-blue-500 bg-blue-100/40 text-blue-800'
+                        )}
+                      >
+                        {children}
+                      </blockquote>
+                    ),
+                    table: ({ children }) => (
+                      <div className="overflow-x-auto mb-3">
+                        <table
+                          className={cn(
+                            'min-w-full border-collapse',
+                            effectiveTheme === 'dark'
+                              ? 'border border-gray-600'
+                              : 'border border-white/50'
+                          )}
+                        >
+                          {children}
+                        </table>
+                      </div>
+                    ),
+                    th: ({ children }) => (
+                      <th
+                        className={cn(
+                          'border px-4 py-2 text-left font-semibold',
+                          effectiveTheme === 'dark'
+                            ? 'border-gray-600 bg-gray-700 text-white'
+                            : 'border-white/50 bg-white/30 text-zinc-800'
+                        )}
+                      >
+                        {children}
+                      </th>
+                    ),
+                    td: ({ children }) => (
+                      <td
+                        className={cn(
+                          'border px-4 py-2',
+                          effectiveTheme === 'dark'
+                            ? 'border-gray-600 text-white/90'
+                            : 'border-white/50 text-zinc-700'
+                        )}
+                      >
+                        {children}
+                      </td>
+                    )
+                  }}
+                >
+                  {config.resumeAnalysis}
+                </ReactMarkdown>
+              </details>
+            </div>
+          )}
+        </div>
         {/* Theme Settings */}
         <div className="space-y-3">
           <h3
