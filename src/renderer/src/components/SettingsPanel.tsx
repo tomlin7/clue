@@ -398,9 +398,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
                 size="icon"
                 title="Refresh Config"
                 onClick={async () => {
+                  setLoadingConfig(true)
                   await window.electronAPI.config.reload()
                   const loadedConfig = await window.electronAPI.config.get()
                   await updateConfig(loadedConfig)
+                  setLoadingConfig(false)
                 }}
                 className={cn(
                   'p-1 h-6 w-6',
