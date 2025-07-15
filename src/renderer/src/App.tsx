@@ -75,6 +75,8 @@ function App() {
           if (isRecording) {
             handleToggleRecording()
           }
+          // Double ensure click-through is enabled when hidden
+          window.electronAPI.setClickThrough(true)
         }
       })
 
@@ -274,6 +276,7 @@ function App() {
 
   const handleCloseSettings = () => {
     setIsSettingsOpen(false)
+    window.electronAPI.setClickThrough(true)
   }
 
   // Check if onboarding is completed
