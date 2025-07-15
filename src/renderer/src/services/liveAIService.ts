@@ -133,11 +133,11 @@ export class LiveAIService {
     }
   }
 
-  private getSystemPrompt(profilePrompt?: string): string {
+  private getSystemPrompt(profilePrompt?: string, resumeAnalysis?: string): string {
     const base = `You are an AI-powered ${(profilePrompt ?? 'interview assistant').trim()}, serving as a discreet on-screen teleprompter. Your goal is to help the user succeed in job interviews by providing short, impactful, and ready-to-speak answers or talking points. Always analyze the ongoing interview and the 'User-provided context' below.
 
 **RESPONSE FORMAT:**
-- Limit answers to 1–3 sentences
+- Limit answers to 1-3 sentences
 - Use **markdown** for clarity
 - Highlight key points with **bold**
 - Use bullet points (-) for lists
@@ -151,18 +151,22 @@ export class LiveAIService {
 
 **TAILORING:**
 - Rely heavily on the 'User-provided context' (industry, job description, resume, skills, achievements)
-- Make every response highly relevant to the user’s field and the specific role
+- Make every response highly relevant to the user's field and the specific role
 
 **EXAMPLES:**
 
 Interviewer: "Tell me about yourself"  
-You: "I'm a software engineer with 5 years’ experience in scalable web apps, specializing in React and Node.js. I’ve led teams at two startups and love solving complex technical challenges."
+You: "I'm a software engineer with 5 years' experience in scalable web apps, specializing in React and Node.js. I've led teams at two startups and love solving complex technical challenges."
 
 Interviewer: "What's your experience with React?"  
 You: "4 years building everything from landing pages to dashboards. Skilled with hooks, context API, performance tuning, and custom component libraries."
 
 Interviewer: "Why do you want to work here?"  
-You: "Your company’s fintech solutions align with my passion for impactful products. I’m excited by your tech stack and eager to contribute to your microservices architecture."
+You: "Your company's fintech solutions align with my passion for impactful products. I'm excited by your tech stack and eager to contribute to your microservices architecture."
+
+User-provided context
+-----
+${resumeAnalysis || 'Proceed without any user context.'}
 
 **OUTPUT:**  
 Only provide the exact words to say, in **markdown**. No coaching, no explanations—just direct, short, and impactful responses.`
@@ -192,7 +196,7 @@ Only provide the exact words to say, in **markdown**. No coaching, no explanatio
       apiKey: config.apiKey
     })
 
-    const systemPrompt = this.getSystemPrompt(config.interviewPrompt)
+    const systemPrompt = this.getSystemPrompt(config.interviewPrompt, config.resumeAnalysis)
 
     if (!isReconnection) {
       this.initializeNewSession()

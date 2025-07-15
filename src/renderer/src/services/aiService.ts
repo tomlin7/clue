@@ -74,6 +74,56 @@ export class AIService {
     return null
   }
 
+  /**
+   * Analyze a resume's extracted text and return a summary string of capabilities, industry, skills, achievements, education, etc.
+   * The summary is concise and suitable for use as user context.
+   */
+  async analyzeResumePdf(resumeText: string): Promise<string> {
+    try {
+      const prompt = ChatPromptTemplate.fromMessages([
+        [
+          'system',
+          `You are an expert resume analyst. 
+  
+  <input>
+  Given a user's resume text, extract a concise, structured summary of their:
+  - Short summary
+  - Capabilities
+  - Industry
+  - Key skills
+  - Achievements (if any)
+  - Work experience (companies, roles, responsibilities) 
+  - Certifications (if any)
+  - Languages (if any)
+  - Projects (if any)
+  - Publications (if any)
+  - Education (universities, degrees)
+
+  <general_guidelines>
+  - NEVER use meta-phrases (e.g., "let me help you", "I can see that").
+  - NEVER provide unsolicited advice.
+  - ALWAYS be specific, detailed, and accurate.
+  - ALWAYS use markdown formatting.
+  - ALWAYS acknowledge uncertainty when present.
+
+  <output_format>
+  - Respond in 1-2 paragraphs, using clear, readable text. 
+  - Do not include the raw resume text in your response.`
+        ],
+        ['human', `Here is my resume text:\n${resumeText}`]
+      ])
+
+      const chain = RunnableSequence.from([prompt, this.model])
+      const response = await chain.invoke({})
+
+      // Return the text response
+      return (response.content as string).trim()
+    } catch (error) {
+      console.error('Error analyzing resume text:', error)
+      throw new Error('Failed to analyze resume text')
+    }
+  }
+
   async analyzeScreenshot(imageData: string): Promise<string> {
     try {
       // Ensure we have a current session

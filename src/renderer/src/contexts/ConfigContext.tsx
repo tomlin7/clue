@@ -21,7 +21,6 @@ export interface InterviewProfile {
   icon: string
   prompt: string
 }
-
 export interface AppConfig {
   aiModel: string
   apiKey: string
@@ -34,6 +33,7 @@ export interface AppConfig {
   interviewProfiles: InterviewProfile[]
   selectedInterviewProfileId: string
   tools: string[] // e.g., ['google-search']
+  resumeAnalysis?: string
 }
 
 interface ConfigContextType {
@@ -64,6 +64,7 @@ interface ConfigContextType {
   getConfigPath: () => Promise<string>
   openConfigFile: () => Promise<void>
   openConfigFolder: () => Promise<void>
+  updateResumeAnalysis: (analysis: string) => Promise<void>
   isLoading: boolean
 }
 
@@ -453,6 +454,12 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     }
   }
 
+  // Add or update resume analysis
+  const updateResumeAnalysis = async (analysis: string) => {
+    if (!config) return
+    await updateConfig({ resumeAnalysis: analysis })
+  }
+
   if (isLoading || !config) {
     return null
   }
@@ -460,7 +467,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
   return (
     <ConfigContext.Provider
       value={{
-        config,
+        config: config!,
         updateConfig,
         updateOpacity,
         addMode,
@@ -468,7 +475,6 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
         deleteMode,
         selectMode,
         getSelectedMode,
-        // Interview profiles
         addInterviewProfile,
         updateInterviewProfile,
         deleteInterviewProfile,
@@ -484,6 +490,7 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
         getConfigPath,
         openConfigFile,
         openConfigFolder,
+        updateResumeAnalysis,
         isLoading
       }}
     >

@@ -18,6 +18,7 @@ export default defineConfig({
         '@': resolve('src/renderer/src')
       }
     },
-    plugins: [react(), tailwindcss()]
+    plugins: [react(), tailwindcss()],
+    assetsInclude: ['**/*.worker.js']
   }
 })
