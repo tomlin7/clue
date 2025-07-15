@@ -185,7 +185,8 @@ export function useInterviewMode() {
         screenshotInterval: config.interviewMode?.screenshotInterval || 5,
         screenshotQuality: config.interviewMode?.screenshotQuality || 'medium',
         tools: config.tools || [],
-        interviewPrompt
+        interviewPrompt,
+        resumeAnalysis: config.resumeAnalysis
       }
 
       console.log('Starting interview mode with config:', sessionConfig)

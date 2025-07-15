@@ -6,6 +6,7 @@ export interface LiveSessionConfig {
   screenshotInterval: number
   screenshotQuality: 'low' | 'medium' | 'high'
   interviewPrompt?: string // prompt from selected interview profile
+  resumeAnalysis?: string // summary of resume for user context
 }
 
 export interface LiveSessionCallbacks {
@@ -136,6 +137,13 @@ export class LiveAIService {
   private getSystemPrompt(profilePrompt?: string, resumeAnalysis?: string): string {
     const base = `You are an AI-powered ${(profilePrompt ?? 'interview assistant').trim()}, serving as a discreet on-screen teleprompter. Your goal is to help the user succeed in job interviews by providing short, impactful, and ready-to-speak answers or talking points. Always analyze the ongoing interview and the 'User-provided context' below.
 
+**IMPORTANT RULES:**
+- **Never repeat, rephrase, or paraphrase the interviewer's question or transcription.**
+- **Only provide a direct answer as if you are the candidate.**
+- Do not echo or reference the question in your response.
+- USE **MARKDOWN** for formatting. 
+- After a set of bullet points, always add three new line characters (\\n) before the next response.
+
 **RESPONSE FORMAT:**
 - Limit answers to 1-3 sentences
 - Use **markdown** for clarity
@@ -227,7 +235,7 @@ Only provide the exact words to say, in **markdown**. No coaching, no explanatio
             if (message.serverContent?.modelTurn?.parts) {
               for (const part of message.serverContent.modelTurn.parts) {
                 if (part.text) {
-                  this.messageBuffer += part.text
+                  this.messageBuffer += ' ' + part.text
                   console.log('🤖 AI response chunk:', part.text)
                   this.callbacks?.onResponse(this.messageBuffer)
                 }
