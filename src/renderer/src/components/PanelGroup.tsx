@@ -139,16 +139,7 @@ export const PanelGroup: React.FC<PanelGroupProps> = ({
 
         {/* Show InterviewerPanel only in interview mode and if there is a transcription */}
         {isInterviewModeEnabled && interviewModeTranscription && (
-          <InterviewerPanel
-            transcription={interviewModeTranscription}
-            theme={
-              typeof window !== 'undefined' &&
-              window.matchMedia &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light'
-            }
-          />
+          <InterviewerPanel transcription={interviewModeTranscription} />
         )}
 
         {/* Show conversation history when visible */}

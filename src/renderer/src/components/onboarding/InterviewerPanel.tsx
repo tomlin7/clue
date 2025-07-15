@@ -1,17 +1,18 @@
 import { cn } from '@/lib/utils'
+import { useTheme } from '@renderer/contexts/ThemeContext'
 import { AudioLines } from 'lucide-react'
 import React from 'react'
 
 interface QuestionPanelProps {
   transcription?: string
-  theme: 'dark' | 'light'
 }
 
 // Renamed to "Interview Question" and styled like ResponsePanel, no explicit header
-export const InterviewerPanel: React.FC<QuestionPanelProps> = ({ transcription, theme }) => {
+export const InterviewerPanel: React.FC<QuestionPanelProps> = ({ transcription }) => {
   if (!transcription) return null
   // Show only the last N words (increased for more context)
   const N = 36
+  const { theme } = useTheme()
   const words = transcription.trim().split(/\s+/)
   const lastWords = words.length > N ? words.slice(-N).join(' ') : transcription
   return (
@@ -32,7 +33,7 @@ export const InterviewerPanel: React.FC<QuestionPanelProps> = ({ transcription, 
       <div
         className={cn(
           'flex items-center gap-2 text-base mb-0',
-          theme === 'dark' ? 'text-white/90' : 'text-zinc-700'
+          theme === 'dark' ? 'text-white/90' : 'text-zinc-600'
         )}
       >
         <span className="flex-shrink-0">
