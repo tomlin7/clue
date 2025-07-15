@@ -89,11 +89,11 @@ function createWindow(): void {
   })
 
   // Handle window focus to maintain click-through
-  mainWindow.on('focus', () => {
-    if (!isVisible && mainWindow) {
-      mainWindow.setIgnoreMouseEvents(true, { forward: true })
-    }
-  })
+  // mainWindow.on('focus', () => {
+  //   if (!isVisible && mainWindow) {
+  //     mainWindow.setIgnoreMouseEvents(true, { forward: true })
+  //   }
+  // })
 
   // Ensure window stays on top and maintains transparency
   mainWindow.on('show', () => {
