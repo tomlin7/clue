@@ -173,13 +173,19 @@ export function useInterviewMode() {
       liveServiceRef.current = new LiveAIService()
       liveServiceRef.current.setCallbacks(callbacks)
 
-      const sessionConfig: LiveSessionConfig & { tools?: string[] } = {
+      // Get the selected interview profile's prompt
+      const selectedProfile = config.interviewProfiles.find(
+        (p) => p.id === config.selectedInterviewProfileId
+      )
+      const interviewPrompt = selectedProfile?.prompt || ''
+
+      const sessionConfig: LiveSessionConfig & { tools?: string[]; interviewPrompt?: string } = {
         apiKey: config.apiKey,
-        customPrompt: config.interviewMode?.customPrompt || '',
         language: config.interviewMode?.language || 'en-US',
         screenshotInterval: config.interviewMode?.screenshotInterval || 5,
         screenshotQuality: config.interviewMode?.screenshotQuality || 'medium',
-        tools: config.tools || []
+        tools: config.tools || [],
+        interviewPrompt
       }
 
       console.log('Starting interview mode with config:', sessionConfig)

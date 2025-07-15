@@ -12,9 +12,14 @@ export interface AIMode {
 export interface InterviewModeConfig {
   screenshotInterval: number
   screenshotQuality: 'low' | 'medium' | 'high'
-  autoAnalyze: boolean
-  customPrompt: string
   language: string
+}
+
+export interface InterviewProfile {
+  id: string
+  name: string
+  icon: string
+  prompt: string
 }
 
 export interface AppConfig {
@@ -26,6 +31,8 @@ export interface AppConfig {
   modes: AIMode[]
   position: { x: number; y: number }
   interviewMode: InterviewModeConfig
+  interviewProfiles: InterviewProfile[]
+  selectedInterviewProfileId: string
   tools: string[] // e.g., ['google-search']
 }
 
@@ -38,6 +45,15 @@ interface ConfigContextType {
   deleteMode: (id: string) => Promise<void>
   selectMode: (id: string) => Promise<void>
   getSelectedMode: () => AIMode | undefined
+  // Interview profiles
+  addInterviewProfile: (profile: Omit<InterviewProfile, 'id'> & { id?: string }) => Promise<string>
+  updateInterviewProfile: (
+    id: string,
+    updates: Partial<Omit<InterviewProfile, 'id'>>
+  ) => Promise<void>
+  deleteInterviewProfile: (id: string) => Promise<void>
+  selectInterviewProfile: (id: string) => Promise<void>
+  getSelectedInterviewProfile: () => InterviewProfile | undefined
   resetConfig: () => Promise<void>
   exportConfig: () => Promise<string>
   importConfig: (configJson: string) => Promise<boolean>
@@ -62,15 +78,60 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
   const [config, setConfig] = useState<AppConfig | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Default interview profiles
+  const defaultInterviewProfiles: InterviewProfile[] = [
+    {
+      id: 'interview',
+      name: 'Interview',
+      icon: '🎤',
+      prompt: 'Assist with job interviews.'
+    },
+    {
+      id: 'sales',
+      name: 'Sales',
+      icon: '💼',
+      prompt: 'Assist with sales calls.'
+    },
+    {
+      id: 'meeting',
+      name: 'Meeting',
+      icon: '📅',
+      prompt: 'Assist with meetings.'
+    },
+    {
+      id: 'presentation',
+      name: 'Presentation',
+      icon: '📊',
+      prompt: 'Assist with presentations.'
+    },
+    {
+      id: 'negotiation',
+      name: 'Negotiation',
+      icon: '🤝',
+      prompt: 'Assist with negotiations.'
+    },
+    {
+      id: 'exam',
+      name: 'Exam',
+      icon: '📝',
+      prompt: 'Assist with exams.'
+    }
+  ]
+
   // Load config from Electron on mount
   useEffect(() => {
     const loadConfig = async () => {
       try {
         const loadedConfig = await window.electronAPI.config.get()
-        // Ensure tools array exists for backward compatibility
+        const loadedProfiles = (loadedConfig as any).interviewProfiles ?? defaultInterviewProfiles
+        const loadedSelectedProfileId =
+          (loadedConfig as any).selectedInterviewProfileId ??
+          (loadedProfiles[0]?.id || defaultInterviewProfiles[0].id)
         setConfig({
           ...loadedConfig,
-          tools: loadedConfig.tools ?? defaultTools
+          tools: loadedConfig.tools ?? defaultTools,
+          interviewProfiles: loadedProfiles,
+          selectedInterviewProfileId: loadedSelectedProfileId
         })
 
         // Apply opacity to the app
@@ -85,6 +146,44 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
 
     loadConfig()
   }, [])
+  // Interview profile helpers
+  const addInterviewProfile = async (
+    profile: Omit<InterviewProfile, 'id'> & { id?: string }
+  ): Promise<string> => {
+    if (!config) throw new Error('Config not loaded')
+    const id = profile.id || Math.random().toString(36).slice(2)
+    const newProfile: InterviewProfile = { ...profile, id } as InterviewProfile
+    const updatedProfiles = [...config.interviewProfiles, newProfile]
+    await updateConfig({ interviewProfiles: updatedProfiles })
+    return id
+  }
+
+  const updateInterviewProfile = async (
+    id: string,
+    updates: Partial<Omit<InterviewProfile, 'id'>>
+  ) => {
+    if (!config) return
+    const updatedProfiles = config.interviewProfiles.map((p) =>
+      p.id === id ? { ...p, ...updates } : p
+    )
+    await updateConfig({ interviewProfiles: updatedProfiles })
+  }
+
+  const deleteInterviewProfile = async (id: string) => {
+    if (!config) return
+    const updatedProfiles = config.interviewProfiles.filter((p) => p.id !== id)
+    await updateConfig({ interviewProfiles: updatedProfiles })
+  }
+
+  const selectInterviewProfile = async (id: string) => {
+    if (!config) return
+    await updateConfig({ selectedInterviewProfileId: id })
+  }
+
+  const getSelectedInterviewProfile = (): InterviewProfile | undefined => {
+    if (!config) return undefined
+    return config.interviewProfiles.find((p) => p.id === config.selectedInterviewProfileId)
+  }
 
   const updateConfig = async (updates: Partial<AppConfig>) => {
     if (!config) return
@@ -92,9 +191,15 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     try {
       await window.electronAPI.config.update(updates)
       const updatedConfig = { ...config, ...updates }
+      const updatedProfiles = (updatedConfig as any).interviewProfiles ?? defaultInterviewProfiles
+      const updatedSelectedProfileId =
+        (updatedConfig as any).selectedInterviewProfileId ??
+        (updatedProfiles[0]?.id || defaultInterviewProfiles[0].id)
       setConfig({
         ...updatedConfig,
-        tools: updatedConfig.tools ?? defaultTools
+        tools: updatedConfig.tools ?? defaultTools,
+        interviewProfiles: updatedProfiles,
+        selectedInterviewProfileId: updatedSelectedProfileId
       })
 
       // Apply opacity immediately if it changed
@@ -112,9 +217,15 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
       const id = await window.electronAPI.config.addMode(mode)
       // Reload config to get the updated modes
       const updatedConfig = await window.electronAPI.config.get()
+      const updatedProfiles2 = (updatedConfig as any).interviewProfiles ?? defaultInterviewProfiles
+      const updatedSelectedProfileId2 =
+        (updatedConfig as any).selectedInterviewProfileId ??
+        (updatedProfiles2[0]?.id || defaultInterviewProfiles[0].id)
       setConfig({
         ...updatedConfig,
-        tools: updatedConfig.tools ?? defaultTools
+        tools: updatedConfig.tools ?? defaultTools,
+        interviewProfiles: updatedProfiles2,
+        selectedInterviewProfileId: updatedSelectedProfileId2
       })
       return id
     } catch (error) {
@@ -128,9 +239,15 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
       await window.electronAPI.config.updateMode(id, updates)
       // Reload config to get the updated modes
       const updatedConfig = await window.electronAPI.config.get()
+      const updatedProfiles3 = (updatedConfig as any).interviewProfiles ?? defaultInterviewProfiles
+      const updatedSelectedProfileId3 =
+        (updatedConfig as any).selectedInterviewProfileId ??
+        (updatedProfiles3[0]?.id || defaultInterviewProfiles[0].id)
       setConfig({
         ...updatedConfig,
-        tools: updatedConfig.tools ?? defaultTools
+        tools: updatedConfig.tools ?? defaultTools,
+        interviewProfiles: updatedProfiles3,
+        selectedInterviewProfileId: updatedSelectedProfileId3
       })
     } catch (error) {
       console.error('Failed to update mode:', error)
@@ -142,9 +259,15 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
       await window.electronAPI.config.deleteMode(id)
       // Reload config to get the updated modes
       const updatedConfig = await window.electronAPI.config.get()
+      const updatedProfiles5 = (updatedConfig as any).interviewProfiles ?? defaultInterviewProfiles
+      const updatedSelectedProfileId5 =
+        (updatedConfig as any).selectedInterviewProfileId ??
+        (updatedProfiles5[0]?.id || defaultInterviewProfiles[0].id)
       setConfig({
         ...updatedConfig,
-        tools: updatedConfig.tools ?? defaultTools
+        tools: updatedConfig.tools ?? defaultTools,
+        interviewProfiles: updatedProfiles5,
+        selectedInterviewProfileId: updatedSelectedProfileId5
       })
     } catch (error) {
       console.error('Failed to delete mode:', error)
@@ -171,9 +294,15 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     try {
       await window.electronAPI.config.reset()
       const updatedConfig = await window.electronAPI.config.get()
+      const updatedProfiles7 = (updatedConfig as any).interviewProfiles ?? defaultInterviewProfiles
+      const updatedSelectedProfileId7 =
+        (updatedConfig as any).selectedInterviewProfileId ??
+        (updatedProfiles7[0]?.id || defaultInterviewProfiles[0].id)
       setConfig({
         ...updatedConfig,
-        tools: updatedConfig.tools ?? defaultTools
+        tools: updatedConfig.tools ?? defaultTools,
+        interviewProfiles: updatedProfiles7,
+        selectedInterviewProfileId: updatedSelectedProfileId7
       })
 
       // Apply opacity
@@ -198,7 +327,17 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
       const success = await window.electronAPI.config.import(configJson)
       if (success) {
         const updatedConfig = await window.electronAPI.config.get()
-        setConfig(updatedConfig)
+        const updatedProfiles6 =
+          (updatedConfig as any).interviewProfiles ?? defaultInterviewProfiles
+        const updatedSelectedProfileId6 =
+          (updatedConfig as any).selectedInterviewProfileId ??
+          (updatedProfiles6[0]?.id || defaultInterviewProfiles[0].id)
+        setConfig({
+          ...updatedConfig,
+          tools: updatedConfig.tools ?? defaultTools,
+          interviewProfiles: updatedProfiles6,
+          selectedInterviewProfileId: updatedSelectedProfileId6
+        })
 
         // Apply opacity
         const root = document.documentElement
@@ -218,7 +357,11 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
         setConfig({
           ...config,
           apiKey,
-          tools: config.tools ?? defaultTools
+          tools: config.tools ?? defaultTools,
+          interviewProfiles: config.interviewProfiles ?? defaultInterviewProfiles,
+          selectedInterviewProfileId:
+            config.selectedInterviewProfileId ??
+            (config.interviewProfiles?.[0]?.id || defaultInterviewProfiles[0].id)
         })
       }
     } catch (error) {
@@ -251,7 +394,11 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
         setConfig({
           ...config,
           apiKey: '',
-          tools: config.tools ?? defaultTools
+          tools: config.tools ?? defaultTools,
+          interviewProfiles: config.interviewProfiles ?? defaultInterviewProfiles,
+          selectedInterviewProfileId:
+            config.selectedInterviewProfileId ??
+            (config.interviewProfiles?.[0]?.id || defaultInterviewProfiles[0].id)
         })
       }
     } catch (error) {
@@ -290,7 +437,16 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
     try {
       await window.electronAPI.config.update({ opacity })
       const updatedConfig = { ...config, opacity }
-      setConfig(updatedConfig)
+      const updatedProfiles4 = (updatedConfig as any).interviewProfiles ?? defaultInterviewProfiles
+      const updatedSelectedProfileId4 =
+        (updatedConfig as any).selectedInterviewProfileId ??
+        (updatedProfiles4[0]?.id || defaultInterviewProfiles[0].id)
+      setConfig({
+        ...updatedConfig,
+        tools: updatedConfig.tools ?? defaultTools,
+        interviewProfiles: updatedProfiles4,
+        selectedInterviewProfileId: updatedSelectedProfileId4
+      })
       // Note: CSS is already updated by the caller for immediate feedback
     } catch (error) {
       console.error('Failed to update opacity:', error)
@@ -312,6 +468,12 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
         deleteMode,
         selectMode,
         getSelectedMode,
+        // Interview profiles
+        addInterviewProfile,
+        updateInterviewProfile,
+        deleteInterviewProfile,
+        selectInterviewProfile,
+        getSelectedInterviewProfile,
         resetConfig,
         exportConfig,
         importConfig,

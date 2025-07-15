@@ -1,3 +1,9 @@
+export interface InterviewProfile {
+  id: string
+  name: string
+  icon: string
+  prompt: string
+}
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
 export interface AIMode {
@@ -12,8 +18,6 @@ export interface AIMode {
 export interface InterviewModeConfig {
   screenshotInterval: number
   screenshotQuality: 'low' | 'medium' | 'high'
-  autoAnalyze: boolean
-  customPrompt: string
   language: string
 }
 
@@ -27,6 +31,9 @@ export interface AppConfig {
   apiKey: string
   interviewMode: InterviewModeConfig
   tools: string[]
+  interviewProfiles: InterviewProfile[]
+  selectedInterviewProfileId: string
+  interviewPrompt?: string // currently selected profile's prompt (optional, for convenience)
 }
 
 export interface ElectronAPI {

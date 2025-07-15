@@ -2,10 +2,10 @@ import { GoogleGenAI } from '@google/genai'
 
 export interface LiveSessionConfig {
   apiKey: string
-  customPrompt?: string
   language?: string
   screenshotInterval: number
   screenshotQuality: 'low' | 'medium' | 'high'
+  interviewPrompt?: string // prompt from selected interview profile
 }
 
 export interface LiveSessionCallbacks {
@@ -133,8 +133,8 @@ export class LiveAIService {
     }
   }
 
-  private getSystemPrompt(customPrompt: string = ''): string {
-    const basePrompt = `You are an AI assistant helping with live interview questions. You should:
+  private getSystemPrompt(profilePrompt?: string): string {
+    const base = `You are an AI assistant helping with live interview questions. You should:
 
 1. Listen to the audio input for interview questions
 2. Analyze any screen content provided to understand the context
@@ -142,15 +142,15 @@ export class LiveAIService {
 4. Be concise but thorough in your responses
 5. Focus on technical accuracy and practical examples when appropriate
 
-${customPrompt ? `Additional instructions: ${customPrompt}` : ''}
-
 Please respond in a conversational, helpful manner as if you're assisting someone in real-time.`
-
-    return basePrompt
+    if (profilePrompt && profilePrompt.trim().length > 0) {
+      return `${base}\n\nProfile instructions: ${profilePrompt.trim()}`
+    }
+    return base
   }
 
   async initializeSession(
-    config: LiveSessionConfig & { tools?: string[] },
+    config: LiveSessionConfig & { tools?: string[]; interviewPrompt?: string },
     isReconnection = false
   ): Promise<boolean> {
     if (this.isInitializing) {
@@ -171,7 +171,7 @@ Please respond in a conversational, helpful manner as if you're assisting someon
       apiKey: config.apiKey
     })
 
-    const systemPrompt = this.getSystemPrompt(config.customPrompt)
+    const systemPrompt = this.getSystemPrompt(config.interviewPrompt)
 
     if (!isReconnection) {
       this.initializeNewSession()
