@@ -289,6 +289,10 @@ ipcMain.handle('config:open-config-folder', (): void => {
   configManager.openConfigFolder()
 })
 
+ipcMain.handle('config:reload', (): void => {
+  configManager.reloadConfig()
+})
+
 app.whenReady().then(() => {
   // Setup display media request handler for system audio capture
   session.defaultSession.setDisplayMediaRequestHandler(
