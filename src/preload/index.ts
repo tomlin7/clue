@@ -75,6 +75,7 @@ export interface ElectronAPI {
     getConfigPath: () => Promise<string>
     openConfigFile: () => Promise<void>
     openConfigFolder: () => Promise<void>
+    reload: () => Promise<void>
   }
 
   // Event listeners
@@ -125,7 +126,8 @@ const electronAPI: ElectronAPI = {
     clearApiKey: () => ipcRenderer.invoke('config:clear-api-key'),
     getConfigPath: () => ipcRenderer.invoke('config:get-config-path'),
     openConfigFile: () => ipcRenderer.invoke('config:open-config-file'),
-    openConfigFolder: () => ipcRenderer.invoke('config:open-config-folder')
+    openConfigFolder: () => ipcRenderer.invoke('config:open-config-folder'),
+    reload: () => ipcRenderer.invoke('config:reload')
   },
 
   // Event listeners

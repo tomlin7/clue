@@ -22,7 +22,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
     selectMode,
     getSelectedMode,
     resetConfig,
-    selectInterviewProfile
+    selectInterviewProfile,
+    getSelectedInterviewProfile
   } = useConfig() as any
   const { theme, setTheme, effectiveTheme } = useTheme()
 
@@ -48,6 +49,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
   if (!isOpen) return null
 
   const selectedMode = getSelectedMode()
+  const selectedInterviewProfile = getSelectedInterviewProfile()
 
   // Debounced function to update config
   const debouncedUpdateConfig = useCallback(
@@ -352,6 +354,17 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               <span className="font-medium text-[10px] leading-tight">Custom</span>
             </button>
           </div>
+          <div
+            className={cn(
+              'p-3 rounded border border-zinc-500/10 text-xs max-h-32 overflow-y-auto',
+              effectiveTheme === 'dark' ? 'bg-white/5 text-white/70' : 'bg-white/30 text-zinc-600'
+            )}
+          >
+            <div className="font-medium mb-2 text-xs">Current Mode:</div>
+            <pre className="text-xs leading-relaxed whitespace-pre-wrap font-sans">
+              {selectedInterviewProfile?.prompt || 'No mode selected'}
+            </pre>
+          </div>
         </div>
 
         {/* Configuration */}
@@ -380,29 +393,31 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               >
                 {config.apiKey.length > 0 ? '✓ API Key Set' : '⚠ No API Key'}
               </div>
-              {config.apiKey.length === 0 && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title="Refresh Config"
-                  onClick={async () => {}}
-                  className={cn(
-                    'p-1 h-6 w-6',
-                    effectiveTheme === 'dark'
-                      ? 'text-white/70 hover:text-white hover:bg-white/10'
-                      : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
-                  )}
-                  disabled={loadingConfig}
-                >
-                  {loadingConfig ? (
-                    <span className="animate-spin">
-                      <RotateCcw size={14} />
-                    </span>
-                  ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Refresh Config"
+                onClick={async () => {
+                  await window.electronAPI.config.reload()
+                  const loadedConfig = await window.electronAPI.config.get()
+                  await updateConfig(loadedConfig)
+                }}
+                className={cn(
+                  'p-1 h-6 w-6',
+                  effectiveTheme === 'dark'
+                    ? 'bg-white/10 text-white hover:bg-white/20'
+                    : 'bg-white/30 text-zinc-700 hover:bg-gray-200'
+                )}
+                disabled={loadingConfig}
+              >
+                {loadingConfig ? (
+                  <span className="animate-spin">
                     <RotateCcw size={14} />
-                  )}
-                </Button>
-              )}
+                  </span>
+                ) : (
+                  <RotateCcw size={14} />
+                )}
+              </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-2">

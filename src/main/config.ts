@@ -321,6 +321,11 @@ class ConfigManager {
     }
   }
 
+  reloadConfig(): void {
+    this.config = this.loadConfig()
+    this.watchers.forEach((watcher) => watcher(this.config))
+  }
+
   // Flush any pending saves immediately (useful for app shutdown)
   flushSave(): void {
     if (this.saveTimeout) {
