@@ -15,15 +15,21 @@ interface SettingsPanelProps {
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, className }) => {
-  const { config, updateConfig, updateOpacity, selectMode, getSelectedMode, resetConfig } =
-    useConfig()
+  const {
+    config,
+    updateConfig,
+    updateOpacity,
+    selectMode,
+    getSelectedMode,
+    resetConfig,
+    selectInterviewProfile
+  } = useConfig() as any
   const { theme, setTheme, effectiveTheme } = useTheme()
-  // const [showAddMode, setShowAddMode] = useState(false)
-  // const [newMode, setNewMode] = useState({ name: '', icon: '', prompt: '', category: '' })
 
   // Local state for smooth opacity updates
   const [localOpacity, setLocalOpacity] = useState(config.opacity)
   const debouncedUpdateRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const [loadingConfig, setLoadingConfig] = useState(false)
 
   // Sync local state with config changes (e.g., from other sources)
   useEffect(() => {
@@ -245,7 +251,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
             )}
           >
-            Modes
+            Manual Modes
           </h3>
           <div className="grid grid-cols-5 gap-1.5">
             {config.modes.map((mode) => (
@@ -298,6 +304,56 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
           </div>
         </div>
 
+        {/* Interview Profiles */}
+        <div className="space-y-3">
+          <h3
+            className={cn(
+              'text-sm font-medium',
+              effectiveTheme === 'dark' ? 'text-white' : 'text-zinc-800'
+            )}
+          >
+            Interview Modes
+          </h3>
+          <div className="grid grid-cols-3 gap-1.5">
+            {config.interviewProfiles?.map((profile) => (
+              <button
+                key={profile.id}
+                onClick={() => selectInterviewProfile(profile.id)}
+                className={cn(
+                  'p-1.5 rounded border border-zinc-500/10 text-xs transition-all duration-200',
+                  'flex flex-col items-center gap-0.5 hover:scale-105 min-h-[50px]',
+                  config.selectedInterviewProfileId === profile.id
+                    ? effectiveTheme === 'dark'
+                      ? 'bg-blue-600/20 border-blue-500/50 text-blue-300'
+                      : 'bg-blue-500/20 border-blue-400/50 text-blue-700'
+                    : effectiveTheme === 'dark'
+                      ? 'bg-white/5 text-white/70 hover:bg-white/10'
+                      : 'bg-white/20 text-zinc-600 hover:bg-white/40'
+                )}
+              >
+                <span className="text-xs">{profile.icon}</span>
+                <span className="font-medium text-[10px] leading-tight">{profile.name}</span>
+              </button>
+            ))}
+            {/* Add Interview Profile Button */}
+            <button
+              onClick={() => window.electronAPI.config.openConfigFile()}
+              className={cn(
+                'p-1.5 rounded border border-zinc-500/10 text-xs transition-all duration-200',
+                'flex flex-col items-center justify-center gap-0.5 hover:scale-105 min-h-[50px]',
+                'border-dashed',
+                effectiveTheme === 'dark'
+                  ? 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 border-dashed border-2 border-white/50'
+                  : 'bg-white/10 text-zinc-400 hover:bg-white/30 hover:text-zinc-500 border-dashed border-2 border-zinc-500'
+              )}
+              title="Add Interview Mode"
+            >
+              <Plus size={15} />
+              <span className="font-medium text-[10px] leading-tight">Custom</span>
+            </button>
+          </div>
+        </div>
+
         {/* Configuration */}
         <div className="space-y-3">
           <h3
@@ -324,6 +380,29 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               >
                 {config.apiKey.length > 0 ? '✓ API Key Set' : '⚠ No API Key'}
               </div>
+              {config.apiKey.length === 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Refresh Config"
+                  onClick={async () => {}}
+                  className={cn(
+                    'p-1 h-6 w-6',
+                    effectiveTheme === 'dark'
+                      ? 'text-white/70 hover:text-white hover:bg-white/10'
+                      : 'text-zinc-600 hover:text-zinc-800 hover:bg-white/30'
+                  )}
+                  disabled={loadingConfig}
+                >
+                  {loadingConfig ? (
+                    <span className="animate-spin">
+                      <RotateCcw size={14} />
+                    </span>
+                  ) : (
+                    <RotateCcw size={14} />
+                  )}
+                </Button>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -621,37 +700,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
               <option value="ja-JP">Japanese</option>
               <option value="ko-KR">Korean</option>
             </select>
-          </div>
-
-          {/* Custom Prompt */}
-          <div className="space-y-2">
-            <label
-              className={cn(
-                'text-sm',
-                effectiveTheme === 'dark' ? 'text-white/70' : 'text-zinc-600'
-              )}
-            >
-              Custom Interview Prompt (optional)
-            </label>
-            <textarea
-              value={config.interviewMode?.customPrompt || ''}
-              onChange={(e) =>
-                updateConfig({
-                  interviewMode: {
-                    ...config.interviewMode,
-                    customPrompt: e.target.value
-                  }
-                })
-              }
-              placeholder="Add specific instructions for the AI assistant..."
-              rows={3}
-              className={cn(
-                'w-full p-2 rounded border border-zinc-500/10 text-sm resize-none',
-                effectiveTheme === 'dark'
-                  ? 'bg-white/10 text-white placeholder:text-white/50'
-                  : 'bg-white/20 text-zinc-800 placeholder:text-zinc-500'
-              )}
-            />
           </div>
 
           {/* Tools Settings */}

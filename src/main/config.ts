@@ -14,9 +14,14 @@ export interface AIMode {
 export interface InterviewModeConfig {
   screenshotInterval: number // seconds
   screenshotQuality: 'low' | 'medium' | 'high'
-  autoAnalyze: boolean
-  customPrompt: string
   language: string
+}
+
+export interface InterviewProfile {
+  id: string
+  name: string
+  icon: string
+  prompt: string
 }
 
 export interface AppConfig {
@@ -28,6 +33,8 @@ export interface AppConfig {
   modes: AIMode[]
   apiKey: string
   interviewMode: InterviewModeConfig
+  interviewProfiles: InterviewProfile[]
+  selectedInterviewProfileId: string
   tools: string[] // e.g., ['google-search']
 }
 
@@ -184,6 +191,45 @@ Look for:
   }
 ]
 
+const defaultInterviewProfiles: InterviewProfile[] = [
+  {
+    id: 'interview',
+    name: 'Interview',
+    icon: '🎤',
+    prompt: 'Assist with job interviews.'
+  },
+  {
+    id: 'sales',
+    name: 'Sales',
+    icon: '💼',
+    prompt: 'Assist with sales calls.'
+  },
+  {
+    id: 'meeting',
+    name: 'Meeting',
+    icon: '📅',
+    prompt: 'Assist with meetings.'
+  },
+  {
+    id: 'presentation',
+    name: 'Presentation',
+    icon: '📊',
+    prompt: 'Assist with presentations.'
+  },
+  {
+    id: 'negotiation',
+    name: 'Negotiation',
+    icon: '🤝',
+    prompt: 'Assist with negotiations.'
+  },
+  {
+    id: 'exam',
+    name: 'Exam',
+    icon: '📝',
+    prompt: 'Assist with exams.'
+  }
+]
+
 const defaultConfig: AppConfig = {
   aiModel: 'gemini-2.0-flash',
   apiKey: '',
@@ -195,10 +241,10 @@ const defaultConfig: AppConfig = {
   interviewMode: {
     screenshotInterval: 5,
     screenshotQuality: 'medium',
-    autoAnalyze: true,
-    customPrompt: '',
     language: 'en-US'
   },
+  interviewProfiles: defaultInterviewProfiles,
+  selectedInterviewProfileId: 'interview',
   tools: ['google-search']
 }
 
@@ -229,9 +275,10 @@ class ConfigManager {
         const merged = {
           ...defaultConfig,
           ...parsed,
-          modes: parsed.modes || defaultModes // Use modes from file, or default modes on first run
+          modes: parsed.modes || defaultModes,
+          interviewProfiles: parsed.interviewProfiles || defaultInterviewProfiles,
+          selectedInterviewProfileId: parsed.selectedInterviewProfileId || 'interview'
         }
-
         return merged
       }
     } catch (error) {
