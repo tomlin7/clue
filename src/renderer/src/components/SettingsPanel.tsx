@@ -6,6 +6,7 @@ import { useConfig } from '@/contexts/ConfigContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { extractTextFromPdf } from '@/lib/pdfTextExtract'
 import { cn } from '@/lib/utils'
+import { AIService } from '@renderer/services/aiService'
 import { ExternalLink, FileText, Moon, Palette, Plus, RotateCcw, Sun, X } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
@@ -150,9 +151,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
         setResumeUploading(false)
         return
       }
-      // Dynamically import aiService and call analyzeResumePdf
-      const aiServiceModule = await import('@/services/aiService')
-      const aiService = new aiServiceModule.AIService(config)
+      const aiService = new AIService(config)
       const summary = await aiService.analyzeResumePdf(resumeText)
       await updateResumeAnalysis(summary)
     } catch (err: any) {
@@ -218,7 +217,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose, c
             disabled={resumeUploading}
             className="text-xs bg-white/10 border border-zinc-500/20 rounded p-2 file:border-0 file:bg-zinc-500 file:text-white file:rounded file:px-3 file:py-1.5 hover:file:bg-zinc-700 transition-colors duration-200"
           />
-          {resumeUploading && <div className="text-xs text-blue-500">Analyzing resume...</div>}
+          {resumeUploading && (
+            <div className="text-xs text-green-500 animate-pulse">Processing, please wait...</div>
+          )}
           {resumeError && <div className="text-xs text-red-500">{resumeError}</div>}
           {config.resumeAnalysis && (
             <div

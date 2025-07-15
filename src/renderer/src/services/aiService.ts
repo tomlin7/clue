@@ -83,34 +83,31 @@ export class AIService {
       const prompt = ChatPromptTemplate.fromMessages([
         [
           'system',
-          `You are an expert resume analyst. 
-  
-  <input>
-  Given a user's resume text, extract a concise, structured summary of their:
-  - Short summary
-  - Capabilities
-  - Industry
-  - Key skills
-  - Achievements (if any)
-  - Work experience (companies, roles, responsibilities) 
-  - Certifications (if any)
-  - Languages (if any)
-  - Projects (if any)
-  - Publications (if any)
-  - Education (universities, degrees)
+          `You are an expert resume analyst. When given a resume, prepare a concise, structured summary as if it's your resume and you are speaking about yourself:
+- Short summary
+- Capabilities
+- Industry
+- Key skills
+- Achievements (if any)
+- Work experience (companies, roles, responsibilities)
+- Certifications (if any)
+- Languages (if any)
+- Projects (if any)
+- Publications (if any)
+- Education (universities, degrees)
 
-  <general_guidelines>
-  - NEVER use meta-phrases (e.g., "let me help you", "I can see that").
-  - NEVER provide unsolicited advice.
-  - ALWAYS be specific, detailed, and accurate.
-  - ALWAYS use markdown formatting.
-  - ALWAYS acknowledge uncertainty when present.
+<general_guidelines>
+- ALWAYS respond in the first person, it is your resume.
+- ALWAYS USE MARKDOWN FORMATTING.
+- NEVER use meta-phrases (e.g., "let me help you", "here is a summary of the resume text you provided").
+- ALWAYS be specific, detailed, and accurate.
+- ALWAYS acknowledge uncertainty when present.
 
-  <output_format>
-  - Respond in 1-2 paragraphs, using clear, readable text. 
-  - Do not include the raw resume text in your response.`
+<output_format>
+- Respond in 1-2 paragraphs, using clear, readable text.
+- Do not include the raw resume text in your response.`
         ],
-        ['human', `Here is my resume text:\n${resumeText}`]
+        ['human', `Resume text:\n${resumeText}`]
       ])
 
       const chain = RunnableSequence.from([prompt, this.model])

@@ -12,14 +12,15 @@ export const InterviewerPanel: React.FC<QuestionPanelProps> = ({ transcription }
   if (!transcription) return null
   // Show only the last N words (increased for more context)
   const N = 36
-  const { theme } = useTheme()
+  const { effectiveTheme } = useTheme()
   const words = transcription.trim().split(/\s+/)
   const lastWords = words.length > N ? words.slice(-N).join(' ') : transcription
+
   return (
     <div
       className={cn(
         'acrylic-panel flex flex-col rounded-lg panel-transition relative z-10',
-        theme === 'dark' ? 'prose-invert' : 'prose-gray',
+        effectiveTheme === 'dark' ? 'prose-invert' : 'prose-gray',
         'p-4',
         'mb-4'
       )}
@@ -33,13 +34,13 @@ export const InterviewerPanel: React.FC<QuestionPanelProps> = ({ transcription }
       <div
         className={cn(
           'flex items-center gap-2 text-base mb-0',
-          theme === 'dark' ? 'text-white/90' : 'text-zinc-600'
+          effectiveTheme === 'dark' ? 'text-white/90' : 'text-zinc-600'
         )}
       >
         <span className="flex-shrink-0">
           <AudioLines
             size={20}
-            className={cn(theme === 'dark' ? 'text-blue-200' : 'text-blue-700')}
+            className={cn(effectiveTheme === 'dark' ? 'text-blue-200' : 'text-blue-700')}
           />
         </span>
         {lastWords}

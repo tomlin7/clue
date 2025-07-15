@@ -50,13 +50,24 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   const contentRef = useRef<HTMLDivElement>(null)
   const { effectiveTheme } = useTheme()
 
-  // Pagination logic for interviewModeResponse
-  const PAGE_WORD_LIMIT = 200
+  // Improved pagination logic for interviewModeResponse
+  // Paginate by splitting at the nearest newline before the character limit to preserve bullet points and sentence boundaries
+  const PAGE_CHAR_LIMIT = 1200
   let paginatedInterviewModeResponses: string[] = []
   if (isInterviewModeEnabled && interviewModeResponse) {
-    const words = interviewModeResponse.trim().split(/\s+/)
-    for (let i = 0; i < words.length; i += PAGE_WORD_LIMIT) {
-      paginatedInterviewModeResponses.push(words.slice(i, i + PAGE_WORD_LIMIT).join(' '))
+    const text = interviewModeResponse.trim()
+    let start = 0
+    while (start < text.length) {
+      let end = Math.min(start + PAGE_CHAR_LIMIT, text.length)
+      if (end < text.length) {
+        // Try to find the last newline before the limit
+        const lastNewline = text.lastIndexOf('\n', end)
+        if (lastNewline > start) {
+          end = lastNewline + 1 // include the newline
+        }
+      }
+      paginatedInterviewModeResponses.push(text.slice(start, end))
+      start = end
     }
   }
 
@@ -64,8 +75,8 @@ export const ResponsePanel: React.FC<ResponsePanelProps> = ({
   const prevNumPagesRef = React.useRef(0)
   React.useEffect(() => {
     if (isInterviewModeEnabled && interviewModeResponse) {
-      const words = interviewModeResponse.trim().split(/\s+/)
-      const numPages = Math.ceil(words.length / PAGE_WORD_LIMIT)
+      const text = interviewModeResponse.trim()
+      const numPages = Math.ceil(text.length / PAGE_CHAR_LIMIT)
       if (numPages > prevNumPagesRef.current) {
         setPage(numPages - 1)
       }

@@ -2,8 +2,8 @@ import { ConversationSummary } from '@/types/conversation'
 import React, { useEffect, useState } from 'react'
 import { ControlPanel } from './ControlPanel'
 import { ConversationHistory } from './ConversationHistory'
+import { InterviewerPanel } from './InterviewerPanel'
 import { ResponsePanel } from './ResponsePanel'
-import { InterviewerPanel } from './onboarding/InterviewerPanel'
 
 interface PanelGroupProps {
   onAskQuestion: (question: string) => void
