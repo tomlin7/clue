@@ -141,8 +141,11 @@ export class LiveAIService {
 - **Never repeat, rephrase, or paraphrase the interviewer's question or transcription.**
 - **Only provide a direct answer as if you are the candidate.**
 - Do not echo or reference the question in your response.
-- USE **MARKDOWN** for formatting. 
-- After a set of bullet points, always add three new line characters (\\n) before the next response.
+- ALWAYS USE **MARKDOWN** for formatting. 
+- ALWAYS be specific, detailed, and accurate.
+- ALWAYS acknowledge uncertainty when present.
+- ALWAYS use markdown formatting.
+- After completing a set of bullet points, always add three trailing newline characters unescaped
 
 **RESPONSE FORMAT:**
 - Limit answers to 1-3 sentences
@@ -235,7 +238,14 @@ Only provide the exact words to say, in **markdown**. No coaching, no explanatio
             if (message.serverContent?.modelTurn?.parts) {
               for (const part of message.serverContent.modelTurn.parts) {
                 if (part.text) {
-                  this.messageBuffer += ' ' + part.text
+                  if (
+                    this.messageBuffer.length > 0 &&
+                    this.messageBuffer[this.messageBuffer.length - 1] === '.'
+                  ) {
+                    this.messageBuffer += ' ' + part.text
+                  } else {
+                    this.messageBuffer += part.text
+                  }
                   console.log('🤖 AI response chunk:', part.text)
                   this.callbacks?.onResponse(this.messageBuffer)
                 }
