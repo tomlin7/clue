@@ -3,6 +3,12 @@
 Clue is a cool overlay to make life easier.
 
 
+
+https://github.com/user-attachments/assets/731d656b-5d1f-4493-b2b5-d90a6ddfbe44
+
+
+
+
 https://github.com/user-attachments/assets/27a90636-a1a5-4993-bfdb-0ebf08e0a7d7
 
 
